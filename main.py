@@ -81,7 +81,6 @@ def get_price(client, message):
     for group_city in products_list:
         msg_products_by_city += numbers['three_line'] + group_city[0][0]['product_city'] + numbers['three_line'] + '\n\n'
         for product_type in group_city:
-            print(product_type)
             msg_products_by_city += product_type[0]['product_name'] + '\n'
             for product in product_type:
                 mesg_product = f"{product['product_massa']} г за {product['product_price']} руб"

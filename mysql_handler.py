@@ -67,8 +67,6 @@ def get_price():
         product_by_city = []
         for product in products_tuple:
             if i == product[4]:
-                product_by_type = []
-
                 for type in products_types:
                     if type == product[1]:
                         p_dict = {}
@@ -76,10 +74,32 @@ def get_price():
                         p_dict['product_massa'] = product[2]
                         p_dict['product_price'] = product[3]
                         p_dict['product_city'] = id_cityname_dict[product[4]]
-                        product_by_type.append(p_dict)
-                product_by_city.append(product_by_type)
+                        product_by_city.append(p_dict)
         products_list_by_city.append(product_by_city)
-    print(products_list_by_city)
+
+
+    enable_cities = set()
+    for city in products_list_by_city:
+        enable_cities.add(city[0]['product_city'])
+
+
+    enable_products = set()
+    for product in products_list_by_city:
+        enable_products.add(product[0]['product_name'])
+
+    main = []
+    for city in products_list_by_city:
+        product = []
+        for i in enable_products:
+            ppp = []
+            for p in city:
+                if p['product_name'] == i:
+                    ppp.append(p)
+            product.append(ppp)
+        main.append(product)
+    print(main)
+
+
     return products_list_by_city
 
 
