@@ -9,6 +9,10 @@ with open('numbers.json', 'r') as n:
     numbers = json.load(n)
 
 def get_cities_list():
+    '''
+    returns dict like: {1: '7️⃣ Moscow', ... }
+    '''
+
     # returns tuple: ( (1, 'Moscow'), ... )
     city_tuple = sql.get_cities()
 
@@ -18,7 +22,6 @@ def get_cities_list():
     for city_id, city in city_tuple:
         for i in city:
             city_dict[city_id] = numbers[str(city_id)] + ' ' + city
-    print(city_dict)
     return city_dict
 
 
@@ -36,7 +39,6 @@ def main_menu(client, message):
 
     # gets dict like: {1: '7️⃣ Moscow', ... }
     city_dict = get_cities_list()
-
 
     # makes cities list to send main menu
     msg_cities = ''
@@ -62,6 +64,37 @@ def help_menu(client, message):
     message.reply_text(msg)
 
 
+def get_price(client, message):
+    messages = sql.get_bot_messages('now_in_stock',
+                                    'main_menu_balance',
+                                    'main_menu_city',
+                                    'list_commands',
+                                    'order_bot'
+                                    )
+
+    # Gets list like: [ [{}, {}, ...], [...], ... ] - every innner list is one city, every dict is product
+    products_list = mysql_handler.get_price()
+
+    # Gets str like: city1:product1, product2; ...  msg_prices_by_city is part of 'msg' string
+    msg_products_by_city = ''
+    for group_city in products_list:
+        msg_products_by_city += numbers['three_line'] + group_city[0]['product_city'] + numbers['three_line'] + '\n'
+        for product in group_city:
+            mesg_product = f"{product['product_massa']} г за "
+
+
+    # gets dict like: {1: '7️⃣ Moscow', ... }
+    city_dict = get_cities_list()
+    # makes cities list to send main menu
+    msg_cities = ''
+    for i, city in city_dict.items():
+        msg_cities += city+'\n'
+
+    msg = f'{messages[0]}\n\n{msg_products_by_city}\n\n{messages[1]}\n\n{messages[2]}\n\n{msg_cities}\n\n{messages[3]}\n\n{messages[4]}'
+    message.reply_text(msg)
+
+
+
 app = Client("my_account")
 
 @app.on_message()
@@ -73,8 +106,7 @@ def echo(client, message):
         main_menu(client, message)
 
     elif message.text == '+':
-        mysql_handler.get_price()
-
+        get_price(client, message)
     elif message.text == '?':
         help_menu(client, message)
 
