@@ -32,15 +32,26 @@ def get_cities():
     connection = connection_creator()
     cursor = connection.cursor()
 
-    cursor.execute("SELECT * FROM cities;")
-    tuple_cities = cursor.fetchall()
-
-    cities = []
-    for i in tuple_cities:
-        cities.append(i[1])
+    cursor.execute("SELECT * FROM city;")
+    city = cursor.fetchall()
 
     connection.close()
-    return cities
+    return city
 
 
+def get_price():
+    connection = connection_creator()
+    cursor = connection.cursor()
+
+    cursor.execute("SELECT * FROM products ORDER BY city;")
+    prices_tuple = cursor.fetchall()
+
+    cursor.execute("SELECT COUNT(id) FROM `products` GROUP BY city;")
+    count_city = len(cursor.fetchall())
+
+    prices_dict = {}
+    city_ids = set()
+    for i in prices_tuple:
+
+        #prices_dict[]
 
