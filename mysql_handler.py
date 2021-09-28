@@ -15,11 +15,19 @@ def connection_creator():
     return connection
 
 
-class SqlRequests:
-    def get_bot_messages(self, text_code):
-        connection = connection_creator()
-        cursor = connection.cursor()
+def get_bot_messages(*args):
+    connection = connection_creator()
+    cursor = connection.cursor()
 
-        cursor.execute("SELECT text FROM bot_messages WHERE text_code = %s", (text_code, ))
+    text = []
+    for i in args:
+        cursor.execute("SELECT text FROM bot_messages WHERE text_id = %s", (i, ))
+        text.append(cursor.fetchone())
 
-        return cursor.fetchone()
+    connection.close()
+    return text
+
+def get_cities():
+    connection = connection_creator()
+    cursor = connection.cursor()
+
