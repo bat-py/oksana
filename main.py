@@ -72,15 +72,22 @@ def get_price(client, message):
                                     'order_bot'
                                     )
 
-    # Gets list like: [ [{}, {}, ...], [...], ... ] - every innner list is one city, every dict is product
+    # Gets list like: [ [ [{},] [{}], ...], [...], ... ] - every second step list is one city, every third step list is type product, every dict is product
     products_list = mysql_handler.get_price()
+
 
     # Gets str like: city1:product1, product2; ...  msg_prices_by_city is part of 'msg' string
     msg_products_by_city = ''
     for group_city in products_list:
-        msg_products_by_city += numbers['three_line'] + group_city[0]['product_city'] + numbers['three_line'] + '\n'
-        for product in group_city:
-            mesg_product = f"{product['product_massa']} г за "
+        msg_products_by_city += numbers['three_line'] + group_city[0][0]['product_city'] + numbers['three_line'] + '\n\n'
+        for product_type in group_city:
+            print(product_type)
+            msg_products_by_city += product_type[0]['product_name'] + '\n'
+            for product in product_type:
+                mesg_product = f"{product['product_massa']} г за {product['product_price']} руб"
+                msg_products_by_city += mesg_product + '\n'
+            msg_products_by_city += '\n'
+
 
 
     # gets dict like: {1: '7️⃣ Moscow', ... }
