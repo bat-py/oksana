@@ -21,13 +21,26 @@ def get_bot_messages(*args):
 
     text = []
     for i in args:
-        cursor.execute("SELECT text FROM bot_messages WHERE text_id = %s", (i, ))
-        text.append(cursor.fetchone())
+        cursor.execute("SELECT text FROM bot_messages WHERE text_id = %s;", (i, ))
+        text.append(cursor.fetchone()[0])
 
     connection.close()
     return text
 
+
 def get_cities():
     connection = connection_creator()
     cursor = connection.cursor()
+
+    cursor.execute("SELECT * FROM cities;")
+    tuple_cities = cursor.fetchall()
+
+    cities = []
+    for i in tuple_cities:
+        cities.append(i[1])
+
+    connection.close()
+    return cities
+
+
 
