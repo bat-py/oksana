@@ -78,10 +78,15 @@ def get_price(client, message):
 
     # Gets str like: city1:product1, product2; ...  msg_prices_by_city is part of 'msg' string
     msg_products_by_city = ''
+
+#    for i in products_list:
+#        print(i)
+#        print('\n\n')
+
     for group_city in products_list:
-        msg_products_by_city += numbers['three_line'] + group_city[0][0]['product_city'] + numbers['three_line'] + '\n\n'
+        msg_products_by_city += numbers['three_line'] + '<b>' + group_city[0][0]['product_city'] + '</b>' + numbers['three_line'] + '\n\n'
         for product_type in group_city:
-            msg_products_by_city += product_type[0]['product_name'] + '\n'
+            msg_products_by_city += '<b>' + product_type[0]['product_name'] + '</b>' + '\n'
             for product in product_type:
                 mesg_product = f"{product['product_massa']} г за {product['product_price']} руб"
                 msg_products_by_city += mesg_product + '\n'
@@ -100,6 +105,38 @@ def get_price(client, message):
     message.reply_text(msg)
 
 
+def leave_comment(client, message):
+    messages = sql.get_bot_messages('leave_comment',
+                                    'list_commands'
+                                    )
+
+    msg = messages[0] + '\n\n' + messages[1]
+    message.reply_text(msg)
+
+
+def wrong_request(client, message):
+    messages = sql.get_bot_messages('wrong_request',
+                                    'list_commands'
+                                    )
+
+    # gets dict like: {1: '7️⃣ Moscow', ... }
+    city_dict = get_cities_list()
+    # makes cities list to send main menu
+    msg_cities = ''
+    for i, city in city_dict.items():
+        msg_cities += city+'\n'
+
+    msg = messages[0] + '\n\n' + msg_cities + '\n' + messages[1]
+    message.reply_text(msg)
+
+def show_comments(client, message):
+    messages = sql.get_bot_messages('show_more',
+                                    'list_commands'
+                                    )
+
+    msg = messages[0] + '\n\n' + messages[1]
+    message.reply_text(msg)
+
 
 app = Client("my_account")
 
@@ -113,8 +150,18 @@ def echo(client, message):
 
     elif message.text == '+':
         get_price(client, message)
+
     elif message.text == '?':
         help_menu(client, message)
+
+    elif message.text == '777':
+        leave_comment(client, message)
+
+    elif message.text == '999':
+        show_comments(client, message)
+
+    else:
+        wrong_request(client, message)
 
 
 app.run()

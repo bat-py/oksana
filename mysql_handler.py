@@ -95,11 +95,11 @@ def get_price():
             for p in city:
                 if p['product_name'] == i:
                     ppp.append(p)
-            product.append(ppp)
+            if ppp:
+                product.append(ppp)
         main.append(product)
-    print(main)
 
 
-    return products_list_by_city
+    return main
 
 
