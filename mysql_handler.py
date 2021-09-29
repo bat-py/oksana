@@ -21,7 +21,7 @@ def get_bot_messages(*args):
 
     text = []
     for i in args:
-        cursor.execute("SELECT text FROM bot_messages WHERE text_id = %s;", (i, ))
+        cursor.execute("SELECT text FROM bot_messages WHERE text_id = %s;", (i,))
         text.append(cursor.fetchone()[0])
 
     connection.close()
@@ -52,7 +52,7 @@ def get_price():
 
     # id_productname_dict gets dict like: {'id': 'productname', ...}
     cursor.execute("SELECT * FROM products_types")
-    id_productname_tuple =  cursor.fetchall()
+    id_productname_tuple = cursor.fetchall()
     id_productname_dict = {}
     for i in id_productname_tuple:
         id_productname_dict[i[0]] = i[1]
@@ -84,11 +84,9 @@ def get_price():
                         product_by_city.append(p_dict)
         products_list_by_city.append(product_by_city)
 
-
     enable_cities = set()
     for city in products_list_by_city:
         enable_cities.add(city[0]['product_city'])
-
 
     enable_products = set()
     for product in products_list_by_city:
@@ -106,7 +104,6 @@ def get_price():
                 product.append(ppp)
         main.append(product)
 
-
     return main
 
 
@@ -114,7 +111,7 @@ def get_user_state(id):
     connection = connection_creator()
     cursor = connection.cursor()
 
-    cursor.execute("SELECT state FROM user_state WHERE id = %s;", (id, ))
+    cursor.execute("SELECT state FROM user_state WHERE id = %s;", (id,))
     user_state = cursor.fetchone()
 
     connection.close()
@@ -149,12 +146,23 @@ def get_feedbacks(user_id, page):
     all_feedbacks = cursor.fetchall()
     connection.close()
 
-    if page > len(all_feedbacks)/5:
+    if page > len(all_feedbacks) / 5:
         page = 1
         change_user_state(user_id, '999')
 
     finish = page * 5
-    start = finish-5
+    start = finish - 5
 
     # returns tuple with 5 tuple objects: ((1, 'ДжетЛи', datetime.date(2021, 9, 21), 'В касание'), ... )
-    return all_feedbacks[start : finish]
+    return all_feedbacks[start: finish]
+
+
+def get_products_in_city(city_id):
+    connection = connection_creator()
+    cursor = connection.cursor()
+
+    cursor.execute("SELECT product, product_name FROM products, products_types WHERE products.product = products_types.id and products.city = %s GROUP BY product ", (int(city_id),))
+    products = cursor.fetchall()
+    connection.close()
+
+    return products

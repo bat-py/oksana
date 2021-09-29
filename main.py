@@ -10,7 +10,8 @@ with open('numbers.json', 'r') as n:
 
 months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
 
-def get_cities_list():
+
+def get_cities_list(without_number=None):
     '''
     returns dict like: {1: '7️⃣ Moscow', ... }
     '''
@@ -20,10 +21,15 @@ def get_cities_list():
 
     city_dict = {}
 
-    # returns dict(id:'witch graphic nubmers'):  { 1 : '7️⃣ Moscow', ... }
-    for city_id, city in city_tuple:
-        for i in city:
-            city_dict[city_id] = numbers[str(city_id)] + ' ' + city
+    if without_number:
+        for city_id, city in city_tuple:
+            for i in city:
+                city_dict[city_id] = city
+    else:
+        # returns dict(id:'witch graphic nubmers'):  { 1 : '7️⃣ Moscow', ... }
+        for city_id, city in city_tuple:
+            for i in city:
+                city_dict[city_id] = numbers[str(city_id)] + ' ' + city
     return city_dict
 
 
@@ -165,6 +171,7 @@ def choise_city(client, message):
     Срабатывает после получения чисел 1-25
     """
     state = sql.get_user_state(message.chat.id)[0]
+
     # Returns all needed bot messages
     messages = sql.get_bot_messages('main_menu_balance',
                                     'you_choise',
@@ -174,23 +181,37 @@ def choise_city(client, message):
                                     'massa',
                                     'choose_product',
                                     'choose_payment',
-                                    'list_commands'
+                                    'list_commands',
+                                    'no_in_stock'
                                     )
 
-    #cities = sql.get_cities()
+    cities = get_cities_list(without_number=1)
+    cities_id = list(map(lambda city: str(city[0]), cities.items()))
+    # I use in sql.get_products_in_city function SORT BY product, so it returns only one product if there ara many one typy product с разными фасофками: ((1, 'Альпийские камни'), (2, 'Оффлайн ТВ(САМОЕ МОЩНОЕ ТВ)'))
+    products_list_in_city = sql.get_products_in_city(message.text)
 
-    cities = get_cities_list()
-    cities_id = list(map(lambda city: city[0], cities.items()))
-
-    # В базе state будет храниться как "c1;p1;"
+    # В базе state будет храниться как "c1;p1;". Запуститься если пользователь выбрал город
     if not state.startswith('c') and message.text in cities_id:
-        sql.change_user_state(message.chat.id, 'c'+str(message.text))
+        # Если у указанного города есть товар в наличии
+        if products_list_in_city:
+            sql.change_user_state(message.chat.id, 'c' + str(message.text))
 
+            # shows main_menu_balance, you_choise and city in more_lines
+            msg1 = f"{messages[0]}\n\n{messages[1]} \"{cities[int(message.text)]}\".\n\n{numbers['more_lines']}\n{messages[2]} {cities[int(message.text)]}\n{numbers['more_lines']}\n\n"
 
-        msg = f"{messages[0]}\n\n{messages[1]} {}"
+            # Gets list like:
+            msg2_part = ''
+            for num, product_name in products_list_in_city:
+                msg2_part += f"{numbers[str(num)]}: {product_name}\n"
 
-    else:
-        print('ass')
+            msg2 = f"{messages[6]}\n\n{msg2_part}\n\n{messages[8]}"
+            message.reply_text(msg1+msg2)
+        else:
+            msg = f"{messages[9]}\n\n{messages[8]}"
+            message.reply_text(msg)
+            sql.change_user_state(message.chat.id, '#')
+#    elif state.startswith('c') and message.text in :
+#        print('ass')
 
 
 
