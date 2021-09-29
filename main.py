@@ -160,6 +160,40 @@ def get_feedbacks(client, message):
     message.reply_text(msg)
 
 
+def choise_city(client, message):
+    """
+    Срабатывает после получения чисел 1-25
+    """
+    state = sql.get_user_state(message.chat.id)[0]
+    # Returns all needed bot messages
+    messages = sql.get_bot_messages('main_menu_balance',
+                                    'you_choise',
+                                    'city',
+                                    'product',
+                                    'district',
+                                    'massa',
+                                    'choose_product',
+                                    'choose_payment',
+                                    'list_commands'
+                                    )
+
+    #cities = sql.get_cities()
+
+    cities = get_cities_list()
+    cities_id = list(map(lambda city: city[0], cities.items()))
+
+    # В базе state будет храниться как "c1;p1;"
+    if not state.startswith('c') and message.text in cities_id:
+        sql.change_user_state(message.chat.id, 'c'+str(message.text))
+
+
+        msg = f"{messages[0]}\n\n{messages[1]} {}"
+
+    else:
+        print('ass')
+
+
+
 def main_menus(client, message):
     if message.text == '$':
         sql.change_user_state(message.chat.id, '$')
@@ -182,31 +216,15 @@ def main_menus(client, message):
         leave_comment(client, message)
 
 
-#def page_state(client, message, state):
-    #state = sql.get_user_state(message.chat.id)
-
-    #if not state:
-    #    sql.add_user(message.chat.id)
-    #    main_menu(client, message)
-    #    return '#'
-    #else:
-    #    sql.change_user_state(message.chat.id, state)
-    #    page_state(client, message)
-
-
-#def page_state(client, message):
-#    state = sql.get_user_state(message.chat.id)
-#    print(state)
-
-
 app = Client("my_account")
 
 
 @app.on_message()
 def echo(client, message):
     menues = ['$', '#', '+', '?', '777']
-
     check_user = sql.get_user_state(message.chat.id)
+    numbers = [str(i) for i in range(1, 26)]
+
     if not check_user:
         sql.add_user(message.chat.id)
         main_menu(client, message)
@@ -215,6 +233,8 @@ def echo(client, message):
             main_menus(client, message)
         elif message.text == '999':
             get_feedbacks(client, message)
+        elif message.text in numbers:
+            choise_city(client, message)
 
 
 app.run()
