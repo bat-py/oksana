@@ -135,56 +135,77 @@ def show_comments(client, message):
                                     'list_commands'
                                     )
 
+    state = sql.get_user_state(message.chat.id)[0]
+    states = state.split(';')
+    if not states.count('999'):
+        sql.change_user_state(message.chat.id, '999')
+        # now we shoud get 1-5 last comments
+    else:
+        # c = states.count('999')
+        # now we should get c*(1-5)
+
+
+    #
+
     msg = messages[0] + '\n\n' + messages[1]
     message.reply_text(msg)
 
 
-def change_state(client, message, state):
-    state = sql.get_user_state(message.chat.id)
+def main_menus(client, message):
+    if message.text == '$':
+        sql.change_user_state(message.chat.id, '$')
+        disput_menu(client, message)
 
-    if not state:
-        sql.add_user(message.chat.id)
+    elif message.text == '#':
+        sql.change_user_state(message.chat.id, '#')
         main_menu(client, message)
-    else:
-        sql.change_user_state(message.chat.id, state)
-        show_page_by_state(client, message)
+
+    elif message.text == '+':
+        sql.change_user_state(message.chat.id, '+')
+        get_price(client, message)
+
+    elif message.text == '?':
+        sql.change_user_state(message.chat.id, '?')
+        help_menu(client, message)
+
+    elif message.text == '777':
+        sql.change_user_state(message.chat.id, '777')
+        leave_comment(client, message)
 
 
-def show_page_by_state(client, message):
-    state = sql.get_user_state(message.chat.id)
-    print(state)
+#def page_state(client, message, state):
+    #state = sql.get_user_state(message.chat.id)
+
+    #if not state:
+    #    sql.add_user(message.chat.id)
+    #    main_menu(client, message)
+    #    return '#'
+    #else:
+    #    sql.change_user_state(message.chat.id, state)
+    #    page_state(client, message)
+
+
+#def page_state(client, message):
+#    state = sql.get_user_state(message.chat.id)
+#    print(state)
+
 
 app = Client("my_account")
 
 
 @app.on_message()
 def echo(client, message):
-    if message.text == '$':
-        disput_menu(client, message)
-        change_state(client, message, '$')
+    menues = ['$', '#', '+', '?', '777']
 
-    elif message.text == '#':
+    check_user = sql.get_user_state(message.chat.id)
+    if not check_user:
+        sql.add_user(message.chat.id)
         main_menu(client, message)
-        change_state(client, message, '$')
-
-    elif message.text == '+':
-        get_price(client, message)
-        change_state(client, message, '$')
-
-    elif message.text == '?':
-        help_menu(client, message)
-        change_state(client, message, '$')
-
-    elif message.text == '777':
-        leave_comment(client, message)
-        change_state(client, message, '$')
-
-    elif message.text == '999':
-        show_comments(client, message)
-        change_state(client, message, '$')
-
-#    else:
-#        wrong_request(client, message)
+    else:
+        if message.text in menues:
+            main_menus(client, message)
+        elif message.text == '999':
+            show_comments(client, message)
 
 
 app.run()
