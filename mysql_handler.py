@@ -50,6 +50,13 @@ def get_price():
     for i in id_cityname_tuple:
         id_cityname_dict[i[0]] = i[1]
 
+    # id_productname_dict gets dict like: {'id': 'productname', ...}
+    cursor.execute("SELECT * FROM products_types")
+    id_productname_tuple =  cursor.fetchall()
+    id_productname_dict = {}
+    for i in id_productname_tuple:
+        id_productname_dict[i[0]] = i[1]
+
     cursor.execute("SELECT * FROM products ORDER BY city;")
     products_tuple = cursor.fetchall()
 
@@ -70,7 +77,7 @@ def get_price():
                 for type in products_types:
                     if type == product[1]:
                         p_dict = {}
-                        p_dict['product_name'] = product[1]
+                        p_dict['product_name'] = id_productname_dict[product[1]]
                         p_dict['product_massa'] = product[2]
                         p_dict['product_price'] = product[3]
                         p_dict['product_city'] = id_cityname_dict[product[4]]
@@ -132,3 +139,22 @@ def add_user(id):
     connection.commit()
 
     connection.close()
+
+
+def get_feedbacks(user_id, page):
+    connection = connection_creator()
+    cursor = connection.cursor()
+
+    cursor.execute("SELECT * FROM feedbacks ORDER BY date DESC ;")
+    all_feedbacks = cursor.fetchall()
+    connection.close()
+
+    if page > len(all_feedbacks)/5:
+        page = 1
+        change_user_state(user_id, '999')
+
+    finish = page * 5
+    start = finish-5
+
+    # returns tuple with 5 tuple objects: ((1, 'ДжетЛи', datetime.date(2021, 9, 21), 'В касание'), ... )
+    return all_feedbacks[start : finish]

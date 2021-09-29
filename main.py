@@ -8,6 +8,8 @@ import json
 with open('numbers.json', 'r') as n:
     numbers = json.load(n)
 
+months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
+
 def get_cities_list():
     '''
     returns dict like: {1: '7️⃣ Moscow', ... }
@@ -130,7 +132,7 @@ def wrong_request(client, message):
     message.reply_text(msg)
 
 
-def show_comments(client, message):
+def get_feedbacks(client, message):
     messages = sql.get_bot_messages('show_more',
                                     'list_commands'
                                     )
@@ -139,15 +141,22 @@ def show_comments(client, message):
     states = state.split(';')
     if not states.count('999'):
         sql.change_user_state(message.chat.id, '999')
+        feedbacks = sql.get_feedbacks(message.chat.id, 1)
         # now we shoud get 1-5 last comments
     else:
-        # c = states.count('999')
-        # now we should get c*(1-5)
+        sql.change_user_state(message.chat.id, state+';999')
+        page = states.count('999') + 1
+        feedbacks = sql.get_feedbacks(message.chat.id, page)
 
+    feedbacks = list(feedbacks)
+    feedbacks.reverse()
 
-    #
+    feedbacks_msg = ''
+    for i in feedbacks:
+        msg = f"{numbers['two_line']}От <b>{i[1]}</b> {i[2].day} {months[ i[2].month-1 ]}{numbers['two_line']}\n{i[3]}\n\n"
+        feedbacks_msg += msg
 
-    msg = messages[0] + '\n\n' + messages[1]
+    msg = messages[0] + '\n\n' + feedbacks_msg + messages[1]
     message.reply_text(msg)
 
 
@@ -205,7 +214,7 @@ def echo(client, message):
         if message.text in menues:
             main_menus(client, message)
         elif message.text == '999':
-            show_comments(client, message)
+            get_feedbacks(client, message)
 
 
 app.run()
