@@ -103,3 +103,32 @@ def get_price():
     return main
 
 
+def get_user_state(id):
+    connection = connection_creator()
+    cursor = connection.cursor()
+
+    cursor.execute("SELECT state FROM user_state WHERE id = %s;", (id, ))
+    user_state = cursor.fetchone()
+
+    connection.close()
+    return user_state
+
+
+def change_user_state(user_id, state):
+    connection = connection_creator()
+    cursor = connection.cursor()
+
+    cursor.execute("UPDATE user_state SET state = %s WHERE id = %s", (state, user_id))
+
+    connection.commit()
+    connection.close()
+
+
+def add_user(id):
+    connection = connection_creator()
+    cursor = connection.cursor()
+
+    cursor.execute("INSERT INTO user_state VALUES (%s, %s);", (id, '#'))
+    connection.commit()
+
+    connection.close()

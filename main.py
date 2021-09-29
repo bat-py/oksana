@@ -129,6 +129,7 @@ def wrong_request(client, message):
     msg = messages[0] + '\n\n' + msg_cities + '\n' + messages[1]
     message.reply_text(msg)
 
+
 def show_comments(client, message):
     messages = sql.get_bot_messages('show_more',
                                     'list_commands'
@@ -138,30 +139,52 @@ def show_comments(client, message):
     message.reply_text(msg)
 
 
+def change_state(client, message, state):
+    state = sql.get_user_state(message.chat.id)
+
+    if not state:
+        sql.add_user(message.chat.id)
+        main_menu(client, message)
+    else:
+        sql.change_user_state(message.chat.id, state)
+        show_page_by_state(client, message)
+
+
+def show_page_by_state(client, message):
+    state = sql.get_user_state(message.chat.id)
+    print(state)
+
 app = Client("my_account")
+
 
 @app.on_message()
 def echo(client, message):
     if message.text == '$':
         disput_menu(client, message)
+        change_state(client, message, '$')
 
     elif message.text == '#':
         main_menu(client, message)
+        change_state(client, message, '$')
 
     elif message.text == '+':
         get_price(client, message)
+        change_state(client, message, '$')
 
     elif message.text == '?':
         help_menu(client, message)
+        change_state(client, message, '$')
 
     elif message.text == '777':
         leave_comment(client, message)
+        change_state(client, message, '$')
 
     elif message.text == '999':
         show_comments(client, message)
+        change_state(client, message, '$')
 
-    else:
-        wrong_request(client, message)
+#    else:
+#        wrong_request(client, message)
 
 
 app.run()
