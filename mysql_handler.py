@@ -57,7 +57,8 @@ def get_price():
     for i in id_productname_tuple:
         id_productname_dict[i[0]] = i[1]
 
-    cursor.execute("SELECT * FROM products ORDER BY city;")
+    #cursor.execute("SELECT * FROM products ORDER BY city;")
+    cursor.execute("SELECT products.id, product, products_massa.massa_gr, price, city FROM products JOIN products_massa ON products.massa = products_massa.id ORDER BY city;")
     products_tuple = cursor.fetchall()
 
     city_ids = set()
@@ -103,7 +104,6 @@ def get_price():
             if ppp:
                 product.append(ppp)
         main.append(product)
-
     return main
 
 
@@ -166,3 +166,5 @@ def get_products_in_city(city_id):
     connection.close()
 
     return products
+
+

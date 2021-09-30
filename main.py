@@ -85,7 +85,7 @@ def get_price(client, message):
                                     )
 
     # Gets list like: [ [ [{},] [{}], ...], [...], ... ] - every second step list is one city, every third step list is type product, every dict is product
-    products_list = mysql_handler.get_price()
+    products_list = sql.get_price()
 
 
     # Gets str like: city1:product1, product2; ...  msg_prices_by_city is part of 'msg' string
@@ -186,20 +186,22 @@ def choise_city(client, message):
                                     'choose_product',
                                     'choose_payment',
                                     'list_commands',
-                                    'no_in_stock'
+                                    'no_in_stock',
+                                    'wrong_request',
+                                    'choose_fasovka'
                                     )
 
     cities = get_cities_list(without_number=1)
     cities_id = list(map(lambda city: str(city[0]), cities.items()))
-    # I use in sql.get_products_in_city function SORT BY product, so it returns only one product if there ara many one typy product с разными фасофками: ((1, 'Альпийские камни'), (2, 'Оффлайн ТВ(САМОЕ МОЩНОЕ ТВ)'))
-    products_list_in_city = sql.get_products_in_city(message.text)
 
     # В базе state будет храниться как "c1;p1;". Запуститься если пользователь выбрал город
     if not state.startswith('c') and message.text in cities_id:
+        # I use in sql.get_products_in_city function SORT BY product, so it returns only one product if there ara many one typy product с разными фасофками: ((1, 'Альпийские камни'), (2, 'Оффлайн ТВ(САМОЕ МОЩНОЕ ТВ)'))
+        products_list_in_city = sql.get_products_in_city(message.text)
+
+        sql.change_user_state(message.chat.id, 'c' + str(message.text))
         # Если у указанного города есть товар в наличии
         if products_list_in_city:
-            sql.change_user_state(message.chat.id, 'c' + str(message.text))
-
             # shows main_menu_balance, you_choise and city in more_lines
             msg1 = f"{messages[0]}\n\n{messages[1]} \"{cities[int(message.text)]}\".\n\n{numbers['more_lines']}\n{messages[2]} {cities[int(message.text)]}\n{numbers['more_lines']}\n\n"
 
@@ -214,6 +216,47 @@ def choise_city(client, message):
             msg = f"{messages[9]}\n\n{messages[8]}"
             message.reply_text(msg)
             sql.change_user_state(message.chat.id, '#')
+
+    # Запуститься если после того как он выбрал тип продукта (2: альпийские кам.  10: Офлайн ...)
+    elif len(state.split(';')) == 1:
+        choosen_city_id = int(state.replace('c', ''))
+        products_list_in_city = sql.get_products_in_city(choosen_city_id)
+
+        # Gets dict like: { '2' : 'Альпийские камни', ... }
+        products_list_in_city_dict = {}
+        for id_, product_name in products_list_in_city:
+            products_list_in_city_dict[str(id_)] = product_name
+        print(products_list_in_city_dict)
+
+        # If member choise correct product type:
+        if message.text in list(map(lambda product: str(product[0]), products_list_in_city)):
+            # Changing user's state to 'c1p2' (1 - id city, 2 - product type)
+            sql.change_user_state(message.chat.id, state+';p'+str(message.text))
+            choosen_product_type_id = message.text
+
+            # Part message Balance, You choise "product name"
+            msg1 = f"{messages[0]}\n\n{messages[1]} \"{products_list_in_city_dict[message.text]}\".\n\n"
+
+
+            # Part message into ----------:
+            msg2 = f"{numbers['more_lines']}\n{messages[2]} {cities[choosen_city_id]}\n{messages[3]} {products_list_in_city_dict[message.text]}\n{numbers['more_lines']}"
+
+            # Part choose fasovka
+            # Gets product's list of fasovka by one type product in city
+            #!!!!
+            msg3 = f"\n\n{messages[11]}\n\n"
+
+            message.reply_text(msg1 + msg2 + msg3)
+        # If member choise wrong number of product type or send random message
+        else:
+            # Gets list like:
+            product_list = ''
+            for num, product_name in products_list_in_city:
+                product_list += f"{numbers[str(num)]}: {product_name}\n"
+
+
+            msg = f"{messages[10]}\n\n{product_list}\n{messages[8]}"
+            message.reply_text(msg)
 
 #    elif state.startswith('c') and message.text in :
 #        print('ass')
@@ -267,5 +310,11 @@ def echo(client, message):
         # Если пользователь отправил неправильный код и если он не находится внутри города или в комментариях, тогда он срабатывает:
         elif not state.startswith('c') and not state.startswith('999'):
             main_menu(client, message, with_wrong_request= True)
+        elif state.startswith('999'):
+            get_feedbacks(client, message)
+        elif state.startswith('c'):
+            choise_city(client, message)
+
+
 
 app.run()
