@@ -29,21 +29,25 @@ def get_cities_list(without_number=None):
         # returns dict(id:'witch graphic nubmers'):  { 1 : '7️⃣ Moscow', ... }
         for city_id, city in city_tuple:
             for i in city:
-                city_dict[city_id] = numbers[str(city_id)] + ' ' + city
+                city_dict[city_id] = numbers[str(city_id)] + ': ' + city
     return city_dict
 
-
-def main_menu(client, message):
+# with_wrong_request: Вместо Отзывы покупателей, Оставить отзыв и Баланс будет wrong_request
+def main_menu(client, message, with_wrong_request= None):
     # message.forward('me')        # all messages saves in Избранное
     messages = sql.get_bot_messages('main_menu_comments',
                                     'main_menu_balance',
                                     'main_menu_city',
                                     'list_commands',
-                                    'order_bot'
+                                    'order_bot',
+                                    'wrong_request'
                                     )
-
-    msg_header = f'{messages[0]}\n\n{messages[1]}\n\n{messages[2]}\n\n'
-    msg_list_commands = f'\n{messages[3]}\n\n{messages[4]}'
+    if with_wrong_request:
+        msg_header = f'{messages[5]}\n\n'
+        msg_list_commands = f'\n{messages[3]}'
+    else:
+        msg_header = f'{messages[0]}\n\n{messages[1]}\n\n{messages[2]}\n\n'
+        msg_list_commands = f'\n{messages[3]}\n\n{messages[4]}'
 
     # gets dict like: {1: '7️⃣ Moscow', ... }
     city_dict = get_cities_list()
@@ -204,15 +208,15 @@ def choise_city(client, message):
             for num, product_name in products_list_in_city:
                 msg2_part += f"{numbers[str(num)]}: {product_name}\n"
 
-            msg2 = f"{messages[6]}\n\n{msg2_part}\n\n{messages[8]}"
+            msg2 = f"{messages[6]}\n\n{msg2_part}\n{messages[8]}"
             message.reply_text(msg1+msg2)
         else:
             msg = f"{messages[9]}\n\n{messages[8]}"
             message.reply_text(msg)
             sql.change_user_state(message.chat.id, '#')
+
 #    elif state.startswith('c') and message.text in :
 #        print('ass')
-
 
 
 def main_menus(client, message):
@@ -246,16 +250,22 @@ def echo(client, message):
     check_user = sql.get_user_state(message.chat.id)
     numbers = [str(i) for i in range(1, 26)]
 
+
     if not check_user:
         sql.add_user(message.chat.id)
         main_menu(client, message)
     else:
+        # Gets ('$',) or None
+        state = sql.get_user_state(message.chat.id)[0]
+
         if message.text in menues:
             main_menus(client, message)
         elif message.text == '999':
             get_feedbacks(client, message)
         elif message.text in numbers:
             choise_city(client, message)
-
+        # Если пользователь отправил неправильный код и если он не находится внутри города или в комментариях, тогда он срабатывает:
+        elif not state.startswith('c') and not state.startswith('999'):
+            main_menu(client, message, with_wrong_request= True)
 
 app.run()
