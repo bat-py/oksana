@@ -287,7 +287,7 @@ def choise_city(client, message):
                 sql.change_user_state(message.chat.id, state+';f'+str(message.text))
 
                 # Part message Balance, You choise "fasovka name"
-                msg1 = f"{messages[0]}\n\n{messages[1]} \"{product_info[3]} шт за {product_info[4]} руб\".\n\n"
+                msg1 = f"{messages[0]}\n\n{messages[1]} \"{product_info[2]} шт за {product_info[3]} руб\".\n\n"
 
                 # Part message into ----------:
                 msg2_city = f"{messages[2]} {cities[choosen_city_id]}"
@@ -315,8 +315,7 @@ def choise_city(client, message):
             else:
                 # Changing user's state to 'c1;p2;f1;0' (1 - id city, 2 - product type, 3 - fasovka, 0 - no district)
                 sql.change_user_state(message.chat.id, state+';f'+str(message.text)+';0')
-                print("fuckyou")
-                payment_menu(client, message)
+                show_payment_menu(client, message, messages, cities, choosen_city_id, choosen_product_type_id, int(message.text))
 
         # Запуститься если пользователь отправил неправильный номер фасовки
         else:
@@ -357,7 +356,7 @@ def choise_city(client, message):
         if choosen_district_id in districts_id:
             # Changing user's state to 'c1;p2;f1;d11' (1 - id city, 2 - product type, 3 - fasovka, 11 - id district)
             sql.change_user_state(message.chat.id, state + ';d' + choosen_district_id)
-            payment_menu(client, message)
+            show_payment_menu(client, message, messages, cities, choosen_city_id, choosen_product_type_id, choosen_fasovka_id, int(choosen_district_id))
 
         # Если отправил неправильный номер района:
         else:
@@ -376,6 +375,60 @@ def choise_city(client, message):
             msg = f"{messages[10]}\n\n{districts_str}\n{messages[8]}\n\n{messages[13]}"
             message.reply_text(msg)
 
+
+def show_payment_menu(client, message, messages, cities, choosen_city_id, choosen_product_type_id, choosen_fasovka_id, choosen_district_id= None):
+    product_info = sql.get_product_info(choosen_city_id, choosen_product_type_id, choosen_fasovka_id)
+
+    # Part message "Choose payment method"
+    msg3_choose_payment_message = f"\n{messages[7]}\n\n"
+    # Gets ((1, 'Оплатить балансом', 'wallet_address'), (...), ...)
+    payment_methods_tuple = sql.get_payment_methods_list()
+    msg3_payment_methods_list = ""
+    for payment_method in payment_methods_tuple:
+        msg3_payment_methods_list += f"{numbers[str(payment_method[0])]}: {payment_method[1]}\n"
+
+    msg3 = msg3_choose_payment_message + msg3_payment_methods_list
+
+    # Если есть район, тогда отправиться "Вы выбрали: ИМЯ_РАЙОНА"
+    if choosen_district_id:
+        districts = product_info[5].split(',')
+
+        # Gets { '11' : 'Советский', }
+        districts_dict = {}
+        for dist in districts:
+            num_distname = dist.split(':')
+            districts_dict[num_distname[0].strip()] = num_distname[1].strip()
+
+        # Part message You choise "district"
+        msg1 = f"{messages[1]} {districts_dict[str(choosen_district_id)]}\n\n"
+
+        # Part message into ----------:
+        msg2_city = f"{messages[2]} {cities[choosen_city_id]}"
+        msg2_product = f"{messages[3]} {sql.get_product_name_by_id(choosen_product_type_id)}"
+        msg2_district = f"{messages[4]} {districts_dict[str(choosen_district_id)]}"
+        msg2_fasovka = f"{messages[5]} {product_info[2]} шт за {product_info[3]} руб"
+        msg2 = f"{numbers['more_lines']}\n{msg2_city}\n{msg2_product}\n{msg2_district}\n{msg2_fasovka}\n{numbers['more_lines']}\n"
+
+        # Part message commands_list and order_bot
+        msg4 = f"\n{messages[8]}\n\n{messages[13]}"
+
+        message.reply_text(msg1 + msg2 + msg3 + msg4)
+
+    # Если у выбранного товара нету района
+    else:
+        # Part message Balance, You choise "fasovka name"
+        msg1 = f"{messages[0]}\n\n{messages[1]} \"{product_info[3]} шт за {product_info[4]} руб\".\n\n"
+
+        # Part message into ----------:
+        msg2_city = f"{messages[2]} {cities[choosen_city_id]}"
+        msg2_product = f"{messages[3]} {sql.get_product_name_by_id(choosen_product_type_id)}"
+        msg2_fasovka = f"{messages[5]} {product_info[2]} шт за {product_info[3]} руб"
+        msg2 = f"{numbers['more_lines']}\n{msg2_city}\n{msg2_product}\n{msg2_fasovka}\n{numbers['more_lines']}\n"
+
+        # Part message commands_list
+        msg4 = f"\n{messages[8]}"
+
+        message.reply_text(msg1 + msg2 + msg3 + msg4)
 
 
 def main_menus(client, message):
@@ -430,7 +483,5 @@ def echo(client, message):
             get_feedbacks(client, message)
         elif state.startswith('c'):
             choise_city(client, message)
-
-
 
 app.run()

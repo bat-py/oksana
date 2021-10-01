@@ -1,5 +1,4 @@
 import pymysql
-from pymysql.cursors import DictCursor
 
 
 def connection_creator():
@@ -208,3 +207,14 @@ def get_product_name_by_id(product_id):
     connection.close()
 
     return product_name
+
+
+def get_payment_methods_list():
+    connection = connection_creator()
+    cursor = connection.cursor()
+
+    cursor.execute("SELECT * FROM payment_methods;")
+    payment_methods = cursor.fetchall()
+    connection.close()
+
+    return payment_methods
