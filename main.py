@@ -271,15 +271,16 @@ def choise_city(client, message):
         choosen_city_id = int(state_list[0].replace('c', ''))
         choosen_product_type_id = int(state_list[1].replace('p', ''))
 
-        # Gets product's tuple list of fasovka by one type product in city: ((2, 2, 0.33, 1050, 1), (3, 2, 0.5, 1350, 1), ...)
+        # Gets product's tuple list of fasovka by one type product in city: ((2, 1, 2, 0.33, 1050, 1), (3, 2, 20, 2, 1350, 1), ...)
         aviable_fasovkas = sql.get_fasovkas_in_city_in_type(choosen_city_id, choosen_product_type_id)
-        aviable_fasovkas_number = [str(i) for i in range(1, len(aviable_fasovkas)+1)]
+
+#        aviable_fasovkas_number = [str(i) for i in range(1, len(aviable_fasovkas)+1)]
+        aviable_fasovkas_number = [str(i[2]) for i in aviable_fasovkas]
 
         # Запуститься если пользователь выбрал правильный номер фасофки и спросит выбрать район если у товара есть район:
         if message.text in aviable_fasovkas_number:
             print(choosen_city_id, choosen_product_type_id, int(message.text))
             product_info = sql.get_product_info(choosen_city_id, choosen_product_type_id, int(message.text))
-            print(product_info)
 
             if product_info[5]:
                 # Changing user's state to 'c1p2f1' (1 - id city, 2 - product type, 3 - fasovka)
@@ -290,12 +291,12 @@ def choise_city(client, message):
                 choosen_product_data = product_info
 
                 # Part message Balance, You choise "fasovka name"
-                msg1 = f"{messages[0]}\n\n{messages[1]} \"{choosen_product_data[2]} шт за {choosen_product_data[3]} руб\".\n\n"
+                msg1 = f"{messages[0]}\n\n{messages[1]} \"{choosen_product_data[3]} шт за {choosen_product_data[4]} руб\".\n\n"
 
                 # Part message into ----------:
                 msg2_city = f"{messages[2]} {cities[choosen_city_id]}"
                 msg2_product = f"{messages[3]} {sql.get_product_name_by_id(choosen_product_type_id)}"
-                msg2_fasovka = f"{messages[5]} {choosen_product_data[2]} шт за {choosen_product_data[3]} руб"
+                msg2_fasovka = f"{messages[5]} {choosen_product_data[3]} шт за {choosen_product_data[4]} руб"
                 msg2 = f"{numbers['more_lines']}\n{msg2_city}\n{msg2_product}\n{msg2_fasovka}\n{numbers['more_lines']}\n"
 
 
@@ -312,13 +313,13 @@ def choise_city(client, message):
 
                 msg3 = f"{messages[12]}\n\n{districts_str}\n{messages[8]}"
 
-
                 message.reply_text(msg1 + msg2 + msg3)
 
             # Запуститься если пользователь выбрал правильный номер фасофки и спросит выбрать метод оплаты (так как у него нету района)
             else:
                 # Changing user's state to 'c1;p2;f1;0' (1 - id city, 2 - product type, 3 - fasovka, 0 - no district)
                 sql.change_user_state(message.chat.id, state+';f'+str(message.text)+';0')
+                print("fuckyou")
                 payment_menu(client, message)
 
         # Запуститься если пользователь отправил неправильный номер фасовки
