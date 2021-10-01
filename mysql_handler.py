@@ -184,6 +184,20 @@ def get_fasovkas_in_city_in_type(city_id, product_id):
     return fasovkas
 
 
+# Gets tuple like  (2, 'Альпийские камни', 0.33, 1050, 'Красноярск', '11:Советский;...')
+def get_product_info(city_id, product_id, fasovka_id):
+    connection = connection_creator()
+    cursor = connection.cursor()
+
+    cursor.execute(
+        "SELECT products.id, products_types.product_name, products_massa.massa_gr, price, city.city_name, districts FROM products JOIN products_massa ON products.massa = products_massa.id JOIN products_types ON products.product = products_types.id JOIN city ON products.city = city.id WHERE products.city = %s and product = %s AND massa = %s;",
+        (city_id, product_id, fasovka_id))
+    product_info = cursor.fetchone()
+    connection.close()
+
+    return product_info
+
+
 def get_product_name_by_id(product_id):
     connection = connection_creator()
     cursor = connection.cursor()

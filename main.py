@@ -270,13 +270,16 @@ def choise_city(client, message):
         state_list = state.split(';')
         choosen_city_id = int(state_list[0].replace('c', ''))
         choosen_product_type_id = int(state_list[1].replace('p', ''))
+
+        product_info = sql.get_product_info(choosen_city_id, choosen_product_type_id, choosen_fasovka_number)
+        print('fuck')
+        print(product_info)
         # Gets product's tuple list of fasovka by one type product in city: ((2, 2, 0.33, 1050, 1), (3, 2, 0.5, 1350, 1), ...)
         aviable_fasovkas = sql.get_fasovkas_in_city_in_type(choosen_city_id, choosen_product_type_id)
 
         aviable_fasovkas_number = [str(i) for i in range(1, len(aviable_fasovkas)+1)]
-        # Запуститься если пользователь выбрал правильный номер фасофки и спросит выбрать район:
-        if message.text in aviable_fasovkas_number:
-            choosen_fasovka_number = message.text
+        # Запуститься если пользователь выбрал правильный номер фасофки и спросит выбрать район если у товара есть район:
+        if message.text in aviable_fasovkas_number and product_info[5]:
             # Changing user's state to 'c1p2f1' (1 - id city, 2 - product type, 3 - fasovka)
             sql.change_user_state(message.chat.id, state+';f'+str(message.text))
 
@@ -293,10 +296,28 @@ def choise_city(client, message):
             msg2_fasovka = f"{messages[5]} {choosen_product_data[2]} шт за {choosen_product_data[3]} руб"
             msg2 = f"{numbers['more_lines']}\n{msg2_city}\n{msg2_product}\n{msg2_fasovka}\n{numbers['more_lines']}\n"
 
-            # Choose district, list_menues
-            districts_list = "1⃣1⃣: Советский"
-            msg3 = f"{messages[12]}\n\n{districts_list}\n\n{messages[8]}"
+
+            # Gets district list and adds to msg3_district
+            # Gets tuple like  (2, 'Альпийские камни', 0.33, 1050, 'Красноярск', '11:Советский,...')q
+            product_info = sql.get_product_info(choosen_city_id, choosen_product_type_id, message.text)
+            districts = product_info[5].split(',')
+            # Gets districts dict: {'11':'Советский', ...}
+            districts_list = [dist.split(':') for dist in districts]
+
+            districts_str = ''
+            for dist in districts_list:
+                districts_str += f"{numbers[str(dist[0])]}: {dist[1]}\n"
+
+            msg3 = f"{messages[12]}\n\n{districts_str}\n{messages[8]}"
+
+
             message.reply_text(msg1 + msg2 + msg3)
+
+        # Запуститься если пользователь выбрал правильный номер фасофки и спросит выбрать метод оплаты (так как у него нету района)
+        elif message.text in aviable_fasovkas_number and not product_info[5]:
+            # Changing user's state to 'c1;p2;f1;0' (1 - id city, 2 - product type, 3 - fasovka, 0 - no district)
+            sql.change_user_state(message.chat.id, state+';f'+str(message.text)+';0')
+            payment_menu(client, message)
 
         # Запуститься если пользователь отправил неправильный номер фасовки
         else:
@@ -312,8 +333,31 @@ def choise_city(client, message):
             msg = f"{messages[10]}\n\n{msg_part_fasovkas_list}\n{messages[8]}"
             message.reply_text(msg)
 
-#    elif state.startswith('c') and message.text in :
-#        print('ass')
+    # Запуститься если у товара есть район и  пользователь выбрал район (If state like 'c1;p2;f10'
+    elif len(state.split(';')) == 3:
+        state_list = state.split(';')
+        choosen_city_id = int(state_list[0].replace('c', ''))
+        choosen_product_type_id = int(state_list[1].replace('p', ''))
+        choosen_fasovka_id = int(state_list[2].replace('f', ''))
+
+        # Gets tuple like  (2, 'Альпийские камни', 0.33, 1050, 'Красноярск', '11:Советский,...')q
+        product_info = sql.get_product_info(choosen_city_id, choosen_product_type_id, choosen_fasovka_id)
+        districts = product_info[5].split(',')
+
+        districts_number = []
+        districts_dict = {}
+        for dist in districts:
+            num_distname = dist.split(':')
+            districts_number.append(num_distname[0].strip())
+            districts_dict[num_distname[0].strip()] = num_distname[1].strip()
+
+        # Если пользователь выбрал существуюший номер района
+        if message.text in districts_number:
+            print('good')
+        else:
+            print('fuck you')
+
+
 
 
 def main_menus(client, message):
