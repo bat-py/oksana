@@ -176,29 +176,13 @@ def choise_city(client, message):
     state = sql.get_user_state(message.chat.id)[0]
 
     # Returns all needed bot messages
-    messages = sql.get_bot_messages('main_menu_balance',
-                                    'you_choise',
-                                    'city',
-                                    'product',
-                                    'district',
+    messages = sql.get_bot_messages('main_menu_balance', 'you_choise', 'city', 'product', 'district',
                                     # 6:
-                                    'massa',
-                                    'choose_product',
-                                    'choose_payment',
-                                    'list_commands',
-                                    'no_in_stock',
-                                    'wrong_request',
+                                    'massa', 'choose_product', 'choose_payment', 'list_commands', 'no_in_stock', 'wrong_request',
                                     # 11:
-                                    'choose_fasovka',
-                                    'choose_district',
-                                    'order_bot',
-                                    'your_balance',
-                                    'pay_with_balance',
+                                    'choose_fasovka', 'choose_district', 'order_bot', 'your_balance', 'pay_with_balance',
                                     # 16:
-                                    'needed_balance',
-                                    'needed_balance_continue',
-                                    'pay',
-                                    'use_more_commission'
+                                    'needed_balance', 'needed_balance_continue', 'pay', 'use_more_commission',
                                     )
 
     cities = get_cities_list(without_number=1)
@@ -300,7 +284,7 @@ def choise_city(client, message):
                 # Part message into ----------:
                 msg2_city = f"{messages[2]} {cities[choosen_city_id]}"
                 msg2_product = f"{messages[3]} {sql.get_product_name_by_id(choosen_product_type_id)}"
-                msg2_fasovka = f"{messages[5]} {product_info[3]} шт за {product_info[4]} руб"
+                msg2_fasovka = f"{messages[5]} {product_info[2]} шт за {product_info[3]} руб"
                 msg2 = f"{numbers['more_lines']}\n{msg2_city}\n{msg2_product}\n{msg2_fasovka}\n{numbers['more_lines']}\n"
 
 
@@ -462,7 +446,7 @@ def choise_city(client, message):
 
         # Если пользователь находится внутри метода "14" и написал что-то
         elif choosen_payment_method_id == 14:
-            pass
+            payment_page.fourteen(wrong_requst=True)
 
         # Если пользователь находится внутри метода "15" и написал что-то
         elif choosen_payment_method_id == 15:
