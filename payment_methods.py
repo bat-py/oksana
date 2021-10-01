@@ -85,21 +85,33 @@ class PaymentMethods:
         pass
 
     def fourteen(self, wrong_requst= None):
-        addt_messeges = sql.get_bot_messages('warning_auto_change', 'warning_may_change_price')
-        # Warnings part
-        msg1 = f"{addt_messeges[0]}\n{self.numbers['more_lines']}\n{addt_messeges[1]}\n{self.numbers['more_lines']}\n"
+        # Вернет сообщение: "Unknown error occured! Details : 400"
+        if self.message.text == '3':
+            addt_messeges = sql.get_bot_messages('warning_auto_change', 'error_400')
 
-        # Price part
-        msg2_real = f"<b>Цена товара : {self.product_info[3]} RUB</b>\n{self.numbers['more_lines']}\n<b>Выберите обменный пункт</b>{self.numbers['more_lines']}\n"
-        msg2_with_comission = f"<b>Exchanger Charlie RUB</b>\nСумма к оплате ПРИМЕРНО: {self.product_info[3]*1.18} RUB\n\n"
-        msg2 = msg2_real + msg2_with_comission
+            # Warnings part
+            msg1 = f"{addt_messeges[0]}\n{self.numbers['more_lines']}\n{addt_messeges[1]}\n\n3⃣: Exchanger Charlie RUB\n\n"
+            # List_commands
+            msg2 = self.messages[8]
 
-        # Button №3
-        msg3 = '3⃣: Exchanger Charlie RUB\n\n'
-        # List_commands
-        msg4 = self.messages[8]
+            self.message.reply_text(msg1 + msg2)
 
-        self.message.reply_text(msg1 + msg2 + msg3 + msg4)
+        else:
+            addt_messeges = sql.get_bot_messages('warning_auto_change', 'warning_may_change_price')
+            # Warnings part
+            msg1 = f"{addt_messeges[0]}\n{self.numbers['more_lines']}\n{addt_messeges[1]}\n{self.numbers['more_lines']}\n"
+
+            # Price part
+            msg2_real = f"<b>Цена товара : {self.product_info[3]} RUB</b>\n{self.numbers['more_lines']}\n<b>Выберите обменный пункт</b>\n{self.numbers['more_lines']}\n"
+            msg2_with_comission = f"<b>Exchanger Charlie RUB</b>\nСумма к оплате ПРИМЕРНО: {self.product_info[3]*1.18} RUB\n\n"
+            msg2 = msg2_real + msg2_with_comission
+
+            # Button №3
+            msg3 = '3⃣: Exchanger Charlie RUB\n\n'
+            # List_commands
+            msg4 = self.messages[8]
+
+            self.message.reply_text(msg1 + msg2 + msg3 + msg4)
 
     def fifteen(self, wrong_requst= None):
         pass
