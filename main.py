@@ -1,8 +1,7 @@
 from pyrogram import Client, filters
 import tgcrypto
-
-import mysql_handler
 import mysql_handler as sql
+import payment_methods as pm
 import json
 
 with open('numbers.json', 'r') as n:
@@ -182,15 +181,24 @@ def choise_city(client, message):
                                     'city',
                                     'product',
                                     'district',
+                                    # 6:
                                     'massa',
                                     'choose_product',
                                     'choose_payment',
                                     'list_commands',
                                     'no_in_stock',
                                     'wrong_request',
+                                    # 11:
                                     'choose_fasovka',
                                     'choose_district',
-                                    'order_bot'
+                                    'order_bot',
+                                    'your_balance',
+                                    'pay_with_balance',
+                                    # 16:
+                                    'needed_balance',
+                                    'needed_balance_continue',
+                                    'pay',
+                                    'use_more_commission'
                                     )
 
     cities = get_cities_list(without_number=1)
@@ -375,6 +383,91 @@ def choise_city(client, message):
             msg = f"{messages[10]}\n\n{districts_str}\n{messages[8]}\n\n{messages[13]}"
             message.reply_text(msg)
 
+    # Запуститься после того как пользователь выбрал метод оплаты
+    elif len(state.split(';')) == 4:
+        state_list = state.split(';')
+        choosen_city_id = int(state_list[0].replace('c', ''))
+        choosen_product_type_id = int(state_list[1].replace('p', ''))
+        choosen_fasovka_id = int(state_list[2].replace('f', ''))
+        choosen_district_id = int(state_list[3].replace('d', ''))
+        choosen_payment_method_id = message.text
+
+        # Aviable payment methods tuple: ( (1, 'Оплатить балансом', 'wallet_adress'), ...)
+        payment_methods_tuple = sql.get_payment_methods_list()
+        payment_methods_id_list = list(map(lambda method: str(method[0]), payment_methods_tuple))
+
+        # Если пользователь выбрал существующий номер метода оплаты
+        if choosen_payment_method_id in payment_methods_id_list:
+            # Changing user's state to 'c1;p2;f1;d11;m1' (1 - id city, 2 - product type, 3 - fasovka, 11 - id district, m1 - method 1)
+            sql.change_user_state(message.chat.id, state + ';m' + choosen_payment_method_id)
+
+            # Creating object, to send payment method page
+            payment_page = pm.PaymentMethods(numbers, message, messages, cities, choosen_city_id,
+                                             choosen_product_type_id, choosen_fasovka_id, choosen_district_id,
+                                             choosen_payment_method_id)
+            if choosen_payment_method_id == '1':
+                payment_page.one()
+            elif choosen_payment_method_id == '11':
+                payment_page.eleven()
+            elif choosen_payment_method_id == '12':
+                payment_page.twelve()
+            elif choosen_payment_method_id == '13':
+                payment_page.thirteen()
+            elif choosen_payment_method_id == '14':
+                payment_page.fourteen()
+            elif choosen_payment_method_id == '15':
+                payment_page.fifteen()
+
+        # Если пользователь выбрал неправильный номер метода
+        else:
+            # Part message "Choose payment method"
+            # Gets ((1, 'Оплатить балансом', 'wallet_address'), (...), ...)
+            payment_methods_tuple = sql.get_payment_methods_list()
+            msg_payment_methods_list = ""
+            for payment_method in payment_methods_tuple:
+                msg_payment_methods_list += f"{numbers[str(payment_method[0])]}: {payment_method[1]}\n"
+
+            msg = f"{messages[10]}\n\n{msg_payment_methods_list}\n{messages[8]}"
+            message.reply_text(msg)
+
+    # Запуститься после того как пользователь отправил что-то внутри метода оплаты
+    elif len(state.split(';')) == 5:
+        state_list = state.split(';')
+        choosen_city_id = int(state_list[0].replace('c', ''))
+        choosen_product_type_id = int(state_list[1].replace('p', ''))
+        choosen_fasovka_id = int(state_list[2].replace('f', ''))
+        choosen_district_id = int(state_list[3].replace('d', ''))
+        choosen_payment_method_id = int(state_list[4].replace('m', ''))
+
+        # чтобы не писал пользователь вернем ему обратно страницу метода "1: Оплатить балансом"
+        payment_page = pm.PaymentMethods(numbers, message, messages, cities, choosen_city_id,
+                                         choosen_product_type_id, choosen_fasovka_id, choosen_district_id,
+                                         choosen_payment_method_id)
+
+        # Если пользователь находится внутри метода "1: Оплатить балансом" и написал что-то
+        if choosen_payment_method_id == 1:
+            payment_page.one(wrong_requst=True)
+
+        # Если пользователь находится внутри метода "11" и написал что-то
+        elif choosen_payment_method_id == 11:
+            payment_page.eleven(wrong_requst=True)
+
+        # Если пользователь находится внутри метода "12" и написал что-то
+        elif choosen_payment_method_id == 12:
+            payment_page.twelve(wrong_requst=True)
+
+        # Если пользователь находится внутри метода "13" и написал что-то
+        elif choosen_payment_method_id == 13:
+            pass
+
+        # Если пользователь находится внутри метода "14" и написал что-то
+        elif choosen_payment_method_id == 14:
+            pass
+
+        # Если пользователь находится внутри метода "15" и написал что-то
+        elif choosen_payment_method_id == 15:
+            pass
+
 
 def show_payment_menu(client, message, messages, cities, choosen_city_id, choosen_product_type_id, choosen_fasovka_id, choosen_district_id= None):
     product_info = sql.get_product_info(choosen_city_id, choosen_product_type_id, choosen_fasovka_id)
@@ -431,7 +524,7 @@ def show_payment_menu(client, message, messages, cities, choosen_city_id, choose
         message.reply_text(msg1 + msg2 + msg3 + msg4)
 
 
-def main_menus(client, message):
+def main_menus(client, message, wrong_request= None):
     if message.text == '$':
         sql.change_user_state(message.chat.id, '$')
         disput_menu(client, message)
@@ -451,6 +544,7 @@ def main_menus(client, message):
     elif message.text == '777':
         sql.change_user_state(message.chat.id, '777')
         leave_comment(client, message)
+
 
 
 app = Client("my_account")

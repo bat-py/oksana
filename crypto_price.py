@@ -9,7 +9,7 @@ HEADERS = {
 # currency: btc or ltc
 def get_cource(currency: str, product_price: int):
     cource = requests.get(f'https://apirone.com/api/v2/ticker?currency={currency}', headers=HEADERS).json()['rub']
-    price_in_crypto = product_price/cource
+    price_in_crypto = int(product_price)/cource
 
-    return(cource, price_in_crypto)
+    return(int(cource), round(price_in_crypto, 8))
 

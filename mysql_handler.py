@@ -218,3 +218,13 @@ def get_payment_methods_list():
     connection.close()
 
     return payment_methods
+
+def get_wallet_address(wallet_id):
+    connection = connection_creator()
+    cursor = connection.cursor()
+
+    cursor.execute("SELECT my_wallet FROM payment_methods WHERE method_number = %s", (int(wallet_id), ))
+    wallet_address = cursor.fetchone()
+    connection.close()
+
+    return wallet_address
