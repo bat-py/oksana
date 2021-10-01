@@ -114,4 +114,43 @@ class PaymentMethods:
             self.message.reply_text(msg1 + msg2 + msg3 + msg4)
 
     def fifteen(self, wrong_requst= None):
-        pass
+        if self.message.text == '3':
+            addt_messeges = sql.get_bot_messages('warning_auto_change', 'qiwi_info')
+            # Warnings part
+            msg1 = f"{addt_messeges[0]}\n{self.numbers['more_lines']}\n<b>Вы выбрали обменный пункт getBTC (CARD/Тинькофф Мобайл)</b>\n{self.numbers['more_lines']}\n"
+
+            # Номер Заявки, Qiwi wallet, price, time
+            msg2_req = f"✅ <b>Номер вашей заявки:</b> GWPBQW\n"
+            msg2_qiwi = f"✅ <b>Номер кошелька Qiwi:</b> {sql.get_wallet_address(self.choosen_payment_method_id)[0]}\n"
+            msg2_price = f"✅ <b>Сумма для пополнения:</b> {int(self.product_info[3]*1.16)}\n"
+            msg2_time = f"✅ <b>До конца оплаты:</b> 1 час\n"
+            msg2 = msg2_req + msg2_qiwi + msg2_price + msg2_time + self.numbers['more_lines'] + '\n'
+
+            # Qiwi_zInfo
+            msg3 = f"{addt_messeges[1]}\n\n"
+
+            # Buttons
+            msg4 = "1⃣: Проверить оплату\n2⃣: Отменить заявку\n\n"
+
+            # command list
+            msg5 = self.messages[8]
+
+            self.message.reply_text(msg1 + msg2 + msg3 + msg4 + msg5)
+
+        else:
+            addt_messeges = sql.get_bot_messages('warning_auto_change', 'warning_may_change_price')
+            # Warnings part
+            msg1 = f"{addt_messeges[0]}\n{self.numbers['more_lines']}\n{addt_messeges[1]}\n{self.numbers['more_lines']}\n"
+
+            # Price part
+            msg2_real = f"<b>Цена товара : {self.product_info[3]} RUB</b>\n{self.numbers['more_lines']}\n<b>Выберите обменный пункт</b>\n{self.numbers['more_lines']}\n"
+            msg2_with_comission = f"<b>getBTC (CARD/Тинькофф Мобайл) RUB</b>\nСумма к оплате ПРИМЕРНО: {self.product_info[3]*1.15} RUB\n\n"
+            msg2 = msg2_real + msg2_with_comission
+
+            # Button №3
+            msg3 = '3⃣: getBTC (CARD/Тинькофф Мобайл) RUB\n\n'
+            # List_commands
+            msg4 = self.messages[8]
+
+            self.message.reply_text(msg1 + msg2 + msg3 + msg4)
+

@@ -450,7 +450,7 @@ def choise_city(client, message):
 
         # Если пользователь находится внутри метода "15" и написал что-то
         elif choosen_payment_method_id == 15:
-            pass
+            payment_page.fifteen(wrong_requst=True)
 
 
 def show_payment_menu(client, message, messages, cities, choosen_city_id, choosen_product_type_id, choosen_fasovka_id, choosen_district_id= None):
