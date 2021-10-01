@@ -242,12 +242,12 @@ def choise_city(client, message):
             msg2 = f"{numbers['more_lines']}\n{messages[2]} {cities[choosen_city_id]}\n{messages[3]} {products_list_in_city_dict[message.text]}\n{numbers['more_lines']}"
 
             # Part choose_fasovka
-            # Gets product's tuple list of fasovka by one type product in city: ((2, 2, 0.33, 1050, 1), (3, 2, 0.5, 1350, 1), ...)
+            # Gets product's tuple list of fasovka by one type product in city: ((2, 2, 1(massa), 0.33(products_massa.massa_gr), 1050, 1), ...)
             fasovkas_in_city_in_type = sql.get_fasovkas_in_city_in_type(choosen_city_id, choosen_product_type_id)
             msg_part_fasovkas_list = ''
-            for graphic_number, product_data in enumerate(fasovkas_in_city_in_type):
-                number = numbers[str(graphic_number+1)]
-                fasovka = f"{product_data[2]} шт за {product_data[3]} руб\n"
+            for product_data in fasovkas_in_city_in_type:
+                number = numbers[str(product_data[2])]
+                fasovka = f"{product_data[3]} шт за {product_data[4]} руб\n"
                 msg_part_fasovkas_list += number + ': ' + fasovka
 
             msg3 = f"\n\n{messages[11]}\n\n{msg_part_fasovkas_list}\n"
@@ -271,64 +271,66 @@ def choise_city(client, message):
         choosen_city_id = int(state_list[0].replace('c', ''))
         choosen_product_type_id = int(state_list[1].replace('p', ''))
 
-        product_info = sql.get_product_info(choosen_city_id, choosen_product_type_id, choosen_fasovka_number)
-        print('fuck')
-        print(product_info)
         # Gets product's tuple list of fasovka by one type product in city: ((2, 2, 0.33, 1050, 1), (3, 2, 0.5, 1350, 1), ...)
         aviable_fasovkas = sql.get_fasovkas_in_city_in_type(choosen_city_id, choosen_product_type_id)
-
         aviable_fasovkas_number = [str(i) for i in range(1, len(aviable_fasovkas)+1)]
+
         # Запуститься если пользователь выбрал правильный номер фасофки и спросит выбрать район если у товара есть район:
-        if message.text in aviable_fasovkas_number and product_info[5]:
-            # Changing user's state to 'c1p2f1' (1 - id city, 2 - product type, 3 - fasovka)
-            sql.change_user_state(message.chat.id, state+';f'+str(message.text))
+        if message.text in aviable_fasovkas_number:
+            print(choosen_city_id, choosen_product_type_id, int(message.text))
+            product_info = sql.get_product_info(choosen_city_id, choosen_product_type_id, int(message.text))
+            print(product_info)
 
-            # Gets choosen product's data: (2, 2, 0.33, 1050, 1)
-            choosen_product_data = sql.get_fasovkas_in_city_in_type(choosen_city_id, choosen_product_type_id)[int(choosen_fasovka_number)]
+            if product_info[5]:
+                # Changing user's state to 'c1p2f1' (1 - id city, 2 - product type, 3 - fasovka)
+                sql.change_user_state(message.chat.id, state+';f'+str(message.text))
 
+                # Gets choosen product's data: (2, 2, 0.33, 1050, 1)
+                #choosen_product_data = sql.get_fasovkas_in_city_in_type(choosen_city_id, choosen_product_type_id)[int(message.text)]
+                choosen_product_data = product_info
 
-            # Part message Balance, You choise "fasovka name"
-            msg1 = f"{messages[0]}\n\n{messages[1]} \"{choosen_product_data[2]} шт за {choosen_product_data[3]} руб\".\n\n"
+                # Part message Balance, You choise "fasovka name"
+                msg1 = f"{messages[0]}\n\n{messages[1]} \"{choosen_product_data[2]} шт за {choosen_product_data[3]} руб\".\n\n"
 
-            # Part message into ----------:
-            msg2_city = f"{messages[2]} {cities[choosen_city_id]}"
-            msg2_product = f"{messages[3]} {sql.get_product_name_by_id(choosen_product_type_id)}"
-            msg2_fasovka = f"{messages[5]} {choosen_product_data[2]} шт за {choosen_product_data[3]} руб"
-            msg2 = f"{numbers['more_lines']}\n{msg2_city}\n{msg2_product}\n{msg2_fasovka}\n{numbers['more_lines']}\n"
-
-
-            # Gets district list and adds to msg3_district
-            # Gets tuple like  (2, 'Альпийские камни', 0.33, 1050, 'Красноярск', '11:Советский,...')q
-            product_info = sql.get_product_info(choosen_city_id, choosen_product_type_id, message.text)
-            districts = product_info[5].split(',')
-            # Gets districts dict: {'11':'Советский', ...}
-            districts_list = [dist.split(':') for dist in districts]
-
-            districts_str = ''
-            for dist in districts_list:
-                districts_str += f"{numbers[str(dist[0])]}: {dist[1]}\n"
-
-            msg3 = f"{messages[12]}\n\n{districts_str}\n{messages[8]}"
+                # Part message into ----------:
+                msg2_city = f"{messages[2]} {cities[choosen_city_id]}"
+                msg2_product = f"{messages[3]} {sql.get_product_name_by_id(choosen_product_type_id)}"
+                msg2_fasovka = f"{messages[5]} {choosen_product_data[2]} шт за {choosen_product_data[3]} руб"
+                msg2 = f"{numbers['more_lines']}\n{msg2_city}\n{msg2_product}\n{msg2_fasovka}\n{numbers['more_lines']}\n"
 
 
-            message.reply_text(msg1 + msg2 + msg3)
+                # Gets district list and adds to msg3_district
+                # Gets tuple like  (2, 'Альпийские камни', 0.33, 1050, 'Красноярск', '11:Советский,...')q
+                product_info = sql.get_product_info(choosen_city_id, choosen_product_type_id, message.text)
+                districts = product_info[5].split(',')
+                # Gets districts dict: {'11':'Советский', ...}
+                districts_list = [dist.split(':') for dist in districts]
 
-        # Запуститься если пользователь выбрал правильный номер фасофки и спросит выбрать метод оплаты (так как у него нету района)
-        elif message.text in aviable_fasovkas_number and not product_info[5]:
-            # Changing user's state to 'c1;p2;f1;0' (1 - id city, 2 - product type, 3 - fasovka, 0 - no district)
-            sql.change_user_state(message.chat.id, state+';f'+str(message.text)+';0')
-            payment_menu(client, message)
+                districts_str = ''
+                for dist in districts_list:
+                    districts_str += f"{numbers[str(dist[0])]}: {dist[1]}\n"
+
+                msg3 = f"{messages[12]}\n\n{districts_str}\n{messages[8]}"
+
+
+                message.reply_text(msg1 + msg2 + msg3)
+
+            # Запуститься если пользователь выбрал правильный номер фасофки и спросит выбрать метод оплаты (так как у него нету района)
+            else:
+                # Changing user's state to 'c1;p2;f1;0' (1 - id city, 2 - product type, 3 - fasovka, 0 - no district)
+                sql.change_user_state(message.chat.id, state+';f'+str(message.text)+';0')
+                payment_menu(client, message)
 
         # Запуститься если пользователь отправил неправильный номер фасовки
         else:
-            # Part choose_fasovka
-            # Gets product's tuple list of fasovka by one type product in city: ((2, 2, 0.33, 1050, 1), (3, 2, 0.5, 1350, 1), ...)
+            # Gets product's tuple list of fasovka by one type product in city: ((2, 2, 1(massa), 0.33(products_massa.massa_gr), 1050, 1), ...)
             fasovkas_in_city_in_type = sql.get_fasovkas_in_city_in_type(choosen_city_id, choosen_product_type_id)
             msg_part_fasovkas_list = ''
-            for graphic_number, product_data in enumerate(fasovkas_in_city_in_type):
-                number = numbers[str(graphic_number+1)]
-                fasovka = f"{product_data[2]} шт за {product_data[3]} руб\n"
+            for product_data in fasovkas_in_city_in_type:
+                number = numbers[str(product_data[2])]
+                fasovka = f"{product_data[3]} шт за {product_data[4]} руб\n"
                 msg_part_fasovkas_list += number + ': ' + fasovka
+
 
             msg = f"{messages[10]}\n\n{msg_part_fasovkas_list}\n{messages[8]}"
             message.reply_text(msg)
