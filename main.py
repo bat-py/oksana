@@ -189,7 +189,8 @@ def choise_city(client, message):
                                     'no_in_stock',
                                     'wrong_request',
                                     'choose_fasovka',
-                                    'choose_district'
+                                    'choose_district',
+                                    'order_bot'
                                     )
 
     cities = get_cities_list(without_number=1)
@@ -279,24 +280,19 @@ def choise_city(client, message):
 
         # Запуститься если пользователь выбрал правильный номер фасофки и спросит выбрать район если у товара есть район:
         if message.text in aviable_fasovkas_number:
-            print(choosen_city_id, choosen_product_type_id, int(message.text))
             product_info = sql.get_product_info(choosen_city_id, choosen_product_type_id, int(message.text))
 
             if product_info[5]:
                 # Changing user's state to 'c1p2f1' (1 - id city, 2 - product type, 3 - fasovka)
                 sql.change_user_state(message.chat.id, state+';f'+str(message.text))
 
-                # Gets choosen product's data: (2, 2, 0.33, 1050, 1)
-                #choosen_product_data = sql.get_fasovkas_in_city_in_type(choosen_city_id, choosen_product_type_id)[int(message.text)]
-                choosen_product_data = product_info
-
                 # Part message Balance, You choise "fasovka name"
-                msg1 = f"{messages[0]}\n\n{messages[1]} \"{choosen_product_data[3]} шт за {choosen_product_data[4]} руб\".\n\n"
+                msg1 = f"{messages[0]}\n\n{messages[1]} \"{product_info[3]} шт за {product_info[4]} руб\".\n\n"
 
                 # Part message into ----------:
                 msg2_city = f"{messages[2]} {cities[choosen_city_id]}"
                 msg2_product = f"{messages[3]} {sql.get_product_name_by_id(choosen_product_type_id)}"
-                msg2_fasovka = f"{messages[5]} {choosen_product_data[3]} шт за {choosen_product_data[4]} руб"
+                msg2_fasovka = f"{messages[5]} {product_info[3]} шт за {product_info[4]} руб"
                 msg2 = f"{numbers['more_lines']}\n{msg2_city}\n{msg2_product}\n{msg2_fasovka}\n{numbers['more_lines']}\n"
 
 
@@ -342,24 +338,43 @@ def choise_city(client, message):
         choosen_city_id = int(state_list[0].replace('c', ''))
         choosen_product_type_id = int(state_list[1].replace('p', ''))
         choosen_fasovka_id = int(state_list[2].replace('f', ''))
+        choosen_district_id = message.text.strip()
 
         # Gets tuple like  (2, 'Альпийские камни', 0.33, 1050, 'Красноярск', '11:Советский,...')q
         product_info = sql.get_product_info(choosen_city_id, choosen_product_type_id, choosen_fasovka_id)
         districts = product_info[5].split(',')
 
-        districts_number = []
+        # Gets ['11', ..]
+        districts_id = []
+        # Gets { '11' : 'Советский', }
         districts_dict = {}
         for dist in districts:
             num_distname = dist.split(':')
-            districts_number.append(num_distname[0].strip())
+            districts_id.append(num_distname[0].strip())
             districts_dict[num_distname[0].strip()] = num_distname[1].strip()
 
         # Если пользователь выбрал существуюший номер района
-        if message.text in districts_number:
-            print('good')
-        else:
-            print('fuck you')
+        if choosen_district_id in districts_id:
+            # Changing user's state to 'c1;p2;f1;d11' (1 - id city, 2 - product type, 3 - fasovka, 11 - id district)
+            sql.change_user_state(message.chat.id, state + ';d' + choosen_district_id)
+            payment_menu(client, message)
 
+        # Если отправил неправильный номер района:
+        else:
+            # Gets district list and adds to msg3_district
+            # Gets tuple like  (2, 'Альпийские камни', 0.33, 1050, 'Красноярск', '11:Советский,...')q
+            product_info = sql.get_product_info(choosen_city_id, choosen_product_type_id, choosen_fasovka_id)
+            districts = product_info[5].split(',')
+            # Gets districts dict: {'11':'Советский', ...}
+            districts_list = [dist.split(':') for dist in districts]
+
+            districts_str = ''
+            for dist in districts_list:
+                districts_str += f"{numbers[str(dist[0])]}: {dist[1]}\n"
+
+
+            msg = f"{messages[10]}\n\n{districts_str}\n{messages[8]}\n\n{messages[13]}"
+            message.reply_text(msg)
 
 
 
