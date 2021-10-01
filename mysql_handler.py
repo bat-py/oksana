@@ -161,10 +161,36 @@ def get_products_in_city(city_id):
     connection = connection_creator()
     cursor = connection.cursor()
 
-    cursor.execute("SELECT product, product_name FROM products, products_types WHERE products.product = products_types.id and products.city = %s GROUP BY product ", (int(city_id),))
+    cursor.execute(
+        "SELECT product, product_name FROM products, products_types WHERE products.product = products_types.id and products.city = %s GROUP BY product ",
+        (int(city_id),))
+
     products = cursor.fetchall()
     connection.close()
 
     return products
 
 
+def get_fasovkas_in_city_in_type(city_id, product_id):
+    connection = connection_creator()
+    cursor = connection.cursor()
+
+    cursor.execute(
+        "SELECT products.id, product, products_massa.massa_gr, price, city FROM products JOIN products_massa ON products.massa = products_massa.id WHERE city=%s and product=%s;",
+        (city_id, product_id))
+    fasovkas = cursor.fetchall()
+    connection.close()
+
+    return fasovkas
+
+
+def get_product_name_by_id(product_id):
+    connection = connection_creator()
+    cursor = connection.cursor()
+
+    cursor.execute("SELECT product_name FROM `products_types` WHERE id = %s;",
+                   (product_id, ))
+    product_name = cursor.fetchone()[0]
+    connection.close()
+
+    return product_name
