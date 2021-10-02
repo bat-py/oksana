@@ -53,8 +53,15 @@ class PaymentMethods:
             # Gets (cource, price_in_crypto):
             crypto_info = crypto_price.get_cource('ltc', self.product_info[3])
 
+            # Wallets
+            wallets_list = []
+            wallets_tuple = sql.get_wallet_address(self.choosen_payment_method_id)
+            if wallets_tuple:
+                wallets_list.extend(wallets_tuple[0].split(','))
+            wallets_list = [i.strip() for i in wallets_list]
+
             # Info in more_lines (use_more_commission)
-            msg1_wallet = f"<b>Кошелек:</b> {sql.get_wallet_address(self.choosen_payment_method_id)[0]}"
+            msg1_wallet = f"<b>Кошелек:</b> {random.choice(wallets_list)}"
             msg1_summa = f"<b>Сумма:</b> {crypto_info[1]} LTC"
             msg1_course = f"<b>Курс:</b> {crypto_info[0]} RUB/LTC"
             msg1 = f"<b>Переведите LTC</b>\n{self.numbers['more_lines']}\n{msg1_wallet}\n{msg1_summa}\n{msg1_course}\n{self.numbers['more_lines']}\n"
@@ -83,8 +90,15 @@ class PaymentMethods:
             # Gets (cource, price_in_crypto):
             crypto_info = crypto_price.get_cource('btc', self.product_info[3])
 
+            # Wallets
+            wallets_list = []
+            wallets_tuple = sql.get_wallet_address(self.choosen_payment_method_id)
+            if wallets_tuple:
+                wallets_list.extend(wallets_tuple[0].split(','))
+            wallets_list = [i.strip() for i in wallets_list]
+
             # Info in more_lines (use_more_commission)
-            msg1_wallet = f"<b>Кошелек:</b> {sql.get_wallet_address(self.choosen_payment_method_id)[0]}"
+            msg1_wallet = f"<b>Кошелек:</b> {random.choice(wallets_list)}"
             msg1_summa = f"<b>Сумма:</b> {crypto_info[1]} BTC"
             msg1_course = f"<b>Курс:</b> {crypto_info[0]} RUB/BTC"
             msg1 = f"<b>Переведите BTC</b>\n{self.numbers['more_lines']}\n{msg1_wallet}\n{msg1_summa}\n{msg1_course}\n{self.numbers['more_lines']}\n"
@@ -146,8 +160,6 @@ class PaymentMethods:
 
             self.message.reply_text(msg1 + msg2)
 
-
-
     def fourteen(self, wrong_requst= None):
         # Вернет сообщение: "Unknown error occured! Details : 400"
         if self.message.text == '3':
@@ -203,16 +215,23 @@ class PaymentMethods:
             self.message.reply_text(msg1 + msg2 + msg3 + msg4)
 
     # Отравить сообщения про заявку
-    def inner_fifteen(self, random, cancel=None):
+    def inner_fifteen(self, random_application, cancel=None):
         # Если отправил любое сообщение кроме "2"
         if not cancel:
             addt_messeges = sql.get_bot_messages('warning_auto_change', 'qiwi_info')
             # Warnings part
             msg1 = f"{addt_messeges[0]}\n{self.numbers['more_lines']}\n<b>Вы выбрали обменный пункт getBTC (CARD/Тинькофф Мобайл)</b>\n{self.numbers['more_lines']}\n"
 
+            # Wallets
+            wallets_list = []
+            wallets_tuple = sql.get_wallet_address(self.choosen_payment_method_id)
+            if wallets_tuple:
+                wallets_list.extend(wallets_tuple[0].split(','))
+            wallets_list = [i.strip() for i in wallets_list]
+
             # Номер Заявки, Qiwi wallet, price, time
-            msg2_req = f"✅ <b>Номер вашей заявки:</b> {random}\n"
-            msg2_qiwi = f"✅ <b>Номер кошелька Qiwi:</b> {sql.get_wallet_address(self.choosen_payment_method_id)[0]}\n"
+            msg2_req = f"✅ <b>Номер вашей заявки:</b> {random_application}\n"
+            msg2_qiwi = f"✅ <b>Номер кошелька Qiwi:</b> {random.choice(wallets_list)}\n"
             msg2_price = f"✅ <b>Сумма для пополнения:</b> {int(self.product_info[3] * 1.16)}\n"
             msg2_time = f"✅ <b>До конца оплаты:</b> 1 час\n"
             msg2 = msg2_req + msg2_qiwi + msg2_price + msg2_time + self.numbers['more_lines'] + '\n'
