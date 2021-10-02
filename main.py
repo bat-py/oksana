@@ -177,12 +177,12 @@ def choise_city(client, message):
 
     # Returns all needed bot messages
     messages = sql.get_bot_messages('main_menu_balance', 'you_choise', 'city', 'product', 'district',
-                                    # 6:
-                                    'massa', 'choose_product', 'choose_payment', 'list_commands', 'no_in_stock', 'wrong_request',
-                                    # 11:
-                                    'choose_fasovka', 'choose_district', 'order_bot', 'your_balance', 'pay_with_balance',
-                                    # 16:
-                                    'needed_balance', 'needed_balance_continue', 'pay', 'use_more_commission',
+                                    #
+                                    'massa', 'choose_product', 'choose_payment', 'list_commands', 'no_in_stock',
+                                    #
+                                    'wrong_request', 'choose_fasovka', 'choose_district', 'order_bot', 'your_balance',
+                                    #
+                                    'pay_with_balance', 'needed_balance', 'needed_balance_continue', 'pay', 'use_more_commission',
                                     )
 
     cities = get_cities_list(without_number=1)
@@ -388,7 +388,7 @@ def choise_city(client, message):
             # Creating object, to send payment method page
             payment_page = pm.PaymentMethods(numbers, message, messages, cities, choosen_city_id,
                                              choosen_product_type_id, choosen_fasovka_id, choosen_district_id,
-                                             choosen_payment_method_id)
+                                             choosen_payment_method_id, state)
             if choosen_payment_method_id == '1':
                 payment_page.one()
             elif choosen_payment_method_id == '11':
@@ -448,7 +448,12 @@ def choise_city(client, message):
 
         # Если пользователь находится внутри метода "13" и написал что-то
         elif choosen_payment_method_id == 13:
-            pass
+            # Если выбрал какой нибудь метод оплаты, вернет error400
+            if message.text in ['3', '4', '5', '6']:
+                payment_page.thirteen(error400=True)
+            else:
+                payment_page.thirteen(wrong_requst=True)
+
 
         # Если пользователь находится внутри метода "14" и написал что-то
         elif choosen_payment_method_id == 14:

@@ -110,18 +110,45 @@ class PaymentMethods:
             msg2 = self.messages[8]
             self.message.reply_text(msg1 + msg2)
 
-    def thirteen(self, wrong_requst= None):
-        addt_messeges = sql.get_bot_messages('warning_auto_change', 'warning_may_change_price')
-        # Warnings part
-        msg1 = f"{addt_messeges[0]}\n{self.numbers['more_lines']}\n{addt_messeges[1]}\n{self.numbers['more_lines']}\n"
+    def thirteen(self, wrong_requst= None, error400=None):
+        if not error400:
+            addt_messeges = sql.get_bot_messages('warning_auto_change', 'warning_may_change_price', 'thirteen_page_buttons')
+            # Warnings part
+            msg1 = f"{addt_messeges[0]}\n{self.numbers['more_lines']}\n{addt_messeges[1]}\n{self.numbers['more_lines']}\n"
 
-        # Price part
-        msg2_real = f"<b>Цена товара : {self.product_info[3]} RUB</b>\n{self.numbers['more_lines']}\n<b>Выберите обменный пункт</b>\n{self.numbers['more_lines']}\n"
-        #msg2_with_comission = f"<b>getBTC (CARD/Тинькофф Мобайл) RUB</b>\nСумма к оплате ПРИМЕРНО: {self.product_info[3] * 1.15} RUB\n\n"
-        #msg2 = msg2_real + msg2_with_comission
+            # Price part
+            msg2 = f"<b>Цена товара : {self.product_info[3]} RUB</b>\n{self.numbers['more_lines']}\n<b>Выберите обменный пункт</b>\n{self.numbers['more_lines']}\n"
+
+            # Comission info part
+            msg3_3 = f"<b>FastChange (CARD/TELE2) RUB</b>\nСумма к оплате ПРИМЕРНО: {round(self.product_info[3]*1.12, 2)} RUB\n\n"
+            msg3_4 = f"<b>getBTC (CARD/Тинькофф Мобайл) RUB</b>\nСумма к оплате ПРИМЕРНО: {round(self.product_info[3]*1.13, 2)} RUB\n\n"
+            msg3_5 = f"<b>Exchanger Charlie RUB</b>\nСумма к оплате ПРИМЕРНО: {round(self.product_info[3]*1.14, 2)} RUB\n\n"
+            msg3_6 = f"<b>Exchanger Alfa RUB</b>\nСумма к оплате ПРИМЕРНО: {round(self.product_info[3]*1.16, 2)} RUB\n\n"
+            msg3 = msg3_3 + msg3_4 + msg3_5 + msg3_6
+
+            # Buttons
+            msg4 = addt_messeges[2]
+
+            # Command list + order_bot
+            msg5 = f"\n\n{self.messages[8]}\n\n{self.messages[13]}"
+
+            msg = msg1 + msg2 + msg3 + msg4 + msg5
+            self.message.reply_text(msg)
+
+        # Срабатывает если быврал какую нибудь метод оплаты и покажет ошибку
+        else:
+            addt_messeges = sql.get_bot_messages('warning_auto_change', 'error_400', 'thirteen_page_buttons')
+
+            # Warnings part
+            msg1 = f"{addt_messeges[0]}\n{self.numbers['more_lines']}\n{addt_messeges[1]}\n\n{addt_messeges[2]}\n\n"
+            # List_commands
+            msg2 = self.messages[8]
+
+            self.message.reply_text(msg1 + msg2)
 
 
-def fourteen(self, wrong_requst= None):
+
+    def fourteen(self, wrong_requst= None):
         # Вернет сообщение: "Unknown error occured! Details : 400"
         if self.message.text == '3':
             addt_messeges = sql.get_bot_messages('warning_auto_change', 'error_400')

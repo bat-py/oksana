@@ -213,7 +213,7 @@ def get_payment_methods_list():
     connection = connection_creator()
     cursor = connection.cursor()
 
-    cursor.execute("SELECT * FROM `payment_methods` WHERE method_number = 1 OR method_number = 11 OR method_number = 12 OR method_number = 13 OR method_number = 14 OR method_number = 15;")
+    cursor.execute("SELECT method_number, method_name, my_wallet FROM `payment_methods` WHERE method_number = 1 OR method_number = 11 OR method_number = 12 OR method_number = 13 OR method_number = 14 OR method_number = 15 AND payment_methods.status = 1;")
     payment_methods = cursor.fetchall()
     connection.close()
 
