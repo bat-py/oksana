@@ -434,11 +434,17 @@ def choise_city(client, message):
 
         # Если пользователь находится внутри метода "11" и написал что-то
         elif choosen_payment_method_id == 11:
-            payment_page.eleven(wrong_requst=True)
+            if message.text == '!myltc':
+                payment_page.eleven(short_page=True)
+            else:
+                payment_page.eleven(wrong_requst=True)
 
         # Если пользователь находится внутри метода "12" и написал что-то
         elif choosen_payment_method_id == 12:
-            payment_page.twelve(wrong_requst=True)
+            if message.text == '!mybtc':
+                payment_page.twelve(short_page=True)
+            else:
+                payment_page.twelve(wrong_requst=True)
 
         # Если пользователь находится внутри метода "13" и написал что-то
         elif choosen_payment_method_id == 13:

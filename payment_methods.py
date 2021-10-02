@@ -15,7 +15,6 @@ class Random:
         return random_str
 
 
-
 class PaymentMethods:
     def __init__(self, numbers, message, messages, cities, choosen_city_id, choosen_product_type_id, choosen_fasovka_id, choosen_district_id, choosen_payment_method_id, state=None):
         self.numbers = numbers
@@ -49,58 +48,80 @@ class PaymentMethods:
         msg = msg1 + msg2 + msg3 + msg4
         self.message.reply_text(msg)
 
-    def eleven(self, wrong_requst= None):
-        # Gets (cource, price_in_crypto):
-        crypto_info = crypto_price.get_cource('ltc', self.product_info[3])
+    def eleven(self, wrong_requst=None, short_page=None):
+        if not short_page:
+            # Gets (cource, price_in_crypto):
+            crypto_info = crypto_price.get_cource('ltc', self.product_info[3])
 
-        # Info in more_lines (use_more_commission)
-        msg1_wallet = f"<b>Кошелек:</b> {sql.get_wallet_address(self.choosen_payment_method_id)[0]}"
-        msg1_summa = f"<b>Сумма:</b> {crypto_info[1]} LTC"
-        msg1_course = f"<b>Курс:</b> {crypto_info[0]} RUB/LTC"
-        msg1 = f"<b>Переведите LTC</b>\n{self.numbers['more_lines']}\n{msg1_wallet}\n{msg1_summa}\n{msg1_course}\n{self.numbers['more_lines']}\n"
+            # Info in more_lines (use_more_commission)
+            msg1_wallet = f"<b>Кошелек:</b> {sql.get_wallet_address(self.choosen_payment_method_id)[0]}"
+            msg1_summa = f"<b>Сумма:</b> {crypto_info[1]} LTC"
+            msg1_course = f"<b>Курс:</b> {crypto_info[0]} RUB/LTC"
+            msg1 = f"<b>Переведите LTC</b>\n{self.numbers['more_lines']}\n{msg1_wallet}\n{msg1_summa}\n{msg1_course}\n{self.numbers['more_lines']}\n"
 
-        # Остальное меню до list_commands
-        msg2 = f"{self.messages[19]}\n\n"
-        # Commands list
-        msg3 = f"{self.messages[8]}"
-        # Order bot
-        msg4 = f"\n\n{self.messages[13]}"
+            # Остальное меню до list_commands
+            msg2 = f"{self.messages[19]}\n\n"
+            # Commands list
+            msg3 = f"{self.messages[8]}"
+            # Order bot
+            msg4 = f"\n\n{self.messages[13]}"
 
-        if wrong_requst:
-            msg = msg1 + msg2 + msg3 + msg4
+            if wrong_requst:
+                msg = msg1 + msg2 + msg3 + msg4
+            else:
+                msg = msg1 + msg2 + msg3
+
+            self.message.reply_text(msg)
+        # Если отправил "!myltc"
         else:
-            msg = msg1 + msg2 + msg3
+            msg1 = f"{sql.get_wallet_address(self.choosen_payment_method_id)[0]}\n\n1⃣: Проверить оплату\n\n"
+            msg2 = self.messages[8]
+            self.message.reply_text(msg1 + msg2)
 
-        self.message.reply_text(msg)
+    def twelve(self, wrong_requst= None, short_page=None):
+        if not short_page:
+            # Gets (cource, price_in_crypto):
+            crypto_info = crypto_price.get_cource('btc', self.product_info[3])
 
-    def twelve(self, wrong_requst= None):
-        # Gets (cource, price_in_crypto):
-        crypto_info = crypto_price.get_cource('btc', self.product_info[3])
+            # Info in more_lines (use_more_commission)
+            msg1_wallet = f"<b>Кошелек:</b> {sql.get_wallet_address(self.choosen_payment_method_id)[0]}"
+            msg1_summa = f"<b>Сумма:</b> {crypto_info[1]} BTC"
+            msg1_course = f"<b>Курс:</b> {crypto_info[0]} RUB/BTC"
+            msg1 = f"<b>Переведите BTC</b>\n{self.numbers['more_lines']}\n{msg1_wallet}\n{msg1_summa}\n{msg1_course}\n{self.numbers['more_lines']}\n"
 
-        # Info in more_lines (use_more_commission)
-        msg1_wallet = f"<b>Кошелек:</b> {sql.get_wallet_address(self.choosen_payment_method_id)[0]}"
-        msg1_summa = f"<b>Сумма:</b> {crypto_info[1]} BTC"
-        msg1_course = f"<b>Курс:</b> {crypto_info[0]} RUB/BTC"
-        msg1 = f"<b>Переведите BTC</b>\n{self.numbers['more_lines']}\n{msg1_wallet}\n{msg1_summa}\n{msg1_course}\n{self.numbers['more_lines']}\n"
+            # Остальное меню до list_commands
+            msg2 = f"{self.messages[19]}\n\n".replace('myltc', 'mybtc')
+            # Commands list
+            msg3 = f"{self.messages[8]}"
+            # Order bot
+            msg4 = f"\n\n{self.messages[13]}"
 
-        # Остальное меню до list_commands
-        msg2 = f"{self.messages[19]}\n\n"
-        # Commands list
-        msg3 = f"{self.messages[8]}"
-        # Order bot
-        msg4 = f"\n\n{self.messages[13]}"
+            if wrong_requst:
+                msg = msg1 + msg2 + msg3 + msg4
+            else:
+                msg = msg1 + msg2 + msg3
 
-        if wrong_requst:
-            msg = msg1 + msg2 + msg3 + msg4
+            self.message.reply_text(msg)
+
+
+        # Если отправил "!mybtc"
         else:
-            msg = msg1 + msg2 + msg3
-
-        self.message.reply_text(msg)
+            msg1 = f"{sql.get_wallet_address(self.choosen_payment_method_id)[0]}\n\n1⃣: Проверить оплату\n\n"
+            msg2 = self.messages[8]
+            self.message.reply_text(msg1 + msg2)
 
     def thirteen(self, wrong_requst= None):
-        pass
+        addt_messeges = sql.get_bot_messages('warning_auto_change', 'warning_may_change_price')
+        # Warnings part
+        msg1 = f"{addt_messeges[0]}\n{self.numbers['more_lines']}\n{addt_messeges[1]}\n{self.numbers['more_lines']}\n"
 
-    def fourteen(self, wrong_requst= None):
+        # Price part
+        msg2_real = f"<b>Цена товара : {self.product_info[3]} RUB</b>\n{self.numbers['more_lines']}\n<b>Выберите обменный пункт</b>\n{self.numbers['more_lines']}\n"
+        #msg2_with_comission = f"<b>getBTC (CARD/Тинькофф Мобайл) RUB</b>\nСумма к оплате ПРИМЕРНО: {self.product_info[3] * 1.15} RUB\n\n"
+        #msg2 = msg2_real + msg2_with_comission
+
+
+def fourteen(self, wrong_requst= None):
         # Вернет сообщение: "Unknown error occured! Details : 400"
         if self.message.text == '3':
             addt_messeges = sql.get_bot_messages('warning_auto_change', 'error_400')
@@ -128,7 +149,6 @@ class PaymentMethods:
             msg4 = self.messages[8]
 
             self.message.reply_text(msg1 + msg2 + msg3 + msg4)
-
 
     def fifteen(self, wrong_requst= None):
         if self.message.text == '3':
