@@ -426,7 +426,7 @@ def choise_city(client, message):
         # чтобы не писал пользователь вернем ему обратно страницу метода "1: Оплатить балансом"
         payment_page = pm.PaymentMethods(numbers, message, messages, cities, choosen_city_id,
                                          choosen_product_type_id, choosen_fasovka_id, choosen_district_id,
-                                         choosen_payment_method_id)
+                                         choosen_payment_method_id, state)
 
         # Если пользователь находится внутри метода "1: Оплатить балансом" и написал что-то
         if choosen_payment_method_id == 1:
@@ -451,6 +451,34 @@ def choise_city(client, message):
         # Если пользователь находится внутри метода "15" и написал что-то
         elif choosen_payment_method_id == 15:
             payment_page.fifteen(wrong_requst=True)
+
+    elif len(state.split(';')) == 6:
+        state_list = state.split(';')
+        choosen_city_id = int(state_list[0].replace('c', ''))
+        choosen_product_type_id = int(state_list[1].replace('p', ''))
+        choosen_fasovka_id = int(state_list[2].replace('f', ''))
+        choosen_district_id = int(state_list[3].replace('d', ''))
+        choosen_payment_method_id = int(state_list[4].replace('m', ''))
+        choosen_inner_payment_method_random = state_list[5].replace('pp', '')
+        check_cancel_payment = message.text
+
+        # чтобы не писал пользователь вернем ему обратно страницу метода "1: Оплатить балансом"
+        payment_page = pm.PaymentMethods(numbers, message, messages, cities, choosen_city_id,
+                                         choosen_product_type_id, choosen_fasovka_id, choosen_district_id,
+                                         choosen_payment_method_id, state)
+
+        # Срабатывает если он находиться внутри 15 метода -> 3: getBTC (CARD/Тинькофф Мобайл) RUB
+        if len(choosen_inner_payment_method_random) and not choosen_inner_payment_method_random.isdigit():
+            cancel = False
+            # Если он выбрал "2: Отменить заявку"
+            if check_cancel_payment == '2':
+                cancel = True
+
+            payment_page.inner_fifteen(choosen_inner_payment_method_random, cancel=cancel)
+
+        # Если выбрал "1: Проверить заявку" или отправил любой другой смс
+        else:
+            payment_page.inner_fifteen(choosen_inner_payment_method_random)
 
 
 def show_payment_menu(client, message, messages, cities, choosen_city_id, choosen_product_type_id, choosen_fasovka_id, choosen_district_id= None):

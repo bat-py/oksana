@@ -1,8 +1,23 @@
 import mysql_handler as sql
 import crypto_price
+import random
+
+
+class Random:
+    def __init__(self):
+        self.letters = list(map(chr, range(ord('A'), ord('Z') + 1)))
+
+    def str6(self):
+        random_str = ''
+        for i in range(0, 6):
+            random_str += random.choice(self.letters)
+
+        return random_str
+
+
 
 class PaymentMethods:
-    def __init__(self, numbers, message, messages, cities, choosen_city_id, choosen_product_type_id, choosen_fasovka_id, choosen_district_id, choosen_payment_method_id):
+    def __init__(self, numbers, message, messages, cities, choosen_city_id, choosen_product_type_id, choosen_fasovka_id, choosen_district_id, choosen_payment_method_id, state=None):
         self.numbers = numbers
         self.message = message
         self.messages = messages
@@ -13,6 +28,7 @@ class PaymentMethods:
         self.choosen_district_id = choosen_district_id
         self.choosen_payment_method_id = choosen_payment_method_id
         self.product_info = sql.get_product_info(choosen_city_id, choosen_product_type_id, choosen_fasovka_id)
+        self.state = state
 
     def one(self, wrong_requst= None):
         # Part msg: Your balance, more_lines
@@ -113,29 +129,14 @@ class PaymentMethods:
 
             self.message.reply_text(msg1 + msg2 + msg3 + msg4)
 
+
     def fifteen(self, wrong_requst= None):
         if self.message.text == '3':
-            addt_messeges = sql.get_bot_messages('warning_auto_change', 'qiwi_info')
-            # Warnings part
-            msg1 = f"{addt_messeges[0]}\n{self.numbers['more_lines']}\n<b>Вы выбрали обменный пункт getBTC (CARD/Тинькофф Мобайл)</b>\n{self.numbers['more_lines']}\n"
+            # pp3 это для страницы 15 (qiwi)
+            random = Random().str6()
 
-            # Номер Заявки, Qiwi wallet, price, time
-            msg2_req = f"✅ <b>Номер вашей заявки:</b> GWPBQW\n"
-            msg2_qiwi = f"✅ <b>Номер кошелька Qiwi:</b> {sql.get_wallet_address(self.choosen_payment_method_id)[0]}\n"
-            msg2_price = f"✅ <b>Сумма для пополнения:</b> {int(self.product_info[3]*1.16)}\n"
-            msg2_time = f"✅ <b>До конца оплаты:</b> 1 час\n"
-            msg2 = msg2_req + msg2_qiwi + msg2_price + msg2_time + self.numbers['more_lines'] + '\n'
-
-            # Qiwi_zInfo
-            msg3 = f"{addt_messeges[1]}\n\n"
-
-            # Buttons
-            msg4 = "1⃣: Проверить оплату\n2⃣: Отменить заявку\n\n"
-
-            # command list
-            msg5 = self.messages[8]
-
-            self.message.reply_text(msg1 + msg2 + msg3 + msg4 + msg5)
+            sql.change_user_state(self.message.chat.id, self.state + f';pp{random}')
+            self.inner_fifteen(random)
 
         else:
             addt_messeges = sql.get_bot_messages('warning_auto_change', 'warning_may_change_price')
@@ -154,3 +155,41 @@ class PaymentMethods:
 
             self.message.reply_text(msg1 + msg2 + msg3 + msg4)
 
+    # Отравить сообщения про заявку
+    def inner_fifteen(self, random, cancel=None):
+        # Если отправил любое сообщение кроме "2"
+        if not cancel:
+            addt_messeges = sql.get_bot_messages('warning_auto_change', 'qiwi_info')
+            # Warnings part
+            msg1 = f"{addt_messeges[0]}\n{self.numbers['more_lines']}\n<b>Вы выбрали обменный пункт getBTC (CARD/Тинькофф Мобайл)</b>\n{self.numbers['more_lines']}\n"
+
+            # Номер Заявки, Qiwi wallet, price, time
+            msg2_req = f"✅ <b>Номер вашей заявки:</b> {random}\n"
+            msg2_qiwi = f"✅ <b>Номер кошелька Qiwi:</b> {sql.get_wallet_address(self.choosen_payment_method_id)[0]}\n"
+            msg2_price = f"✅ <b>Сумма для пополнения:</b> {int(self.product_info[3] * 1.16)}\n"
+            msg2_time = f"✅ <b>До конца оплаты:</b> 1 час\n"
+            msg2 = msg2_req + msg2_qiwi + msg2_price + msg2_time + self.numbers['more_lines'] + '\n'
+
+            # Qiwi_zInfo
+            msg3 = f"{addt_messeges[1]}\n\n"
+
+            # Buttons
+            msg4 = "1⃣: Проверить оплату\n2⃣: Отменить заявку\n\n"
+
+            # command list
+            msg5 = self.messages[8]
+            self.message.reply_text(msg1 + msg2 + msg3 + msg4 + msg5)
+
+        else:
+            sql.change_user_state(self.message.chat.id, '#')
+            # Warnings part
+            addt_messeges = sql.get_bot_messages('warning_auto_change')
+            msg1 = f"{addt_messeges[0]}\n{self.numbers['more_lines']}\n"
+
+            # Your application(заявка) canceled
+            msg2 = f"Ваша заявка № {random} успешно удалена!\nВы будете возвращены в главное меню.\n\n"
+
+            # List_commands
+            msg3 = self.messages[8]
+
+            self.message.reply_text(msg1 + msg2+ msg3)
