@@ -178,6 +178,7 @@ def get_fasovkas_in_city_in_type(city_id, product_id):
         "SELECT products.id, product, massa, products_massa.massa_gr, price, city FROM products JOIN products_massa ON products.massa = products_massa.id WHERE city=%s and product=%s;",
         (city_id, product_id))
     fasovkas = cursor.fetchall()
+    print(fasovkas)
     connection.close()
 
     return fasovkas
