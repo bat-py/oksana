@@ -536,12 +536,12 @@ def show_payment_menu(client, message, messages, cities, choosen_city_id, choose
     # Если у выбранного товара нету района
     else:
         # Part message Balance, You choise "fasovka name"
-        msg1 = f"{messages[0]}\n\n{messages[1]} \"{check_massa(product_info[3])} г за {product_info[4]} руб\".\n\n"
+        msg1 = f"{messages[0]}\n\n{messages[1]} \"{check_massa(product_info[2])} г за {product_info[3]} руб\".\n\n"
 
         # Part message into ----------:
         msg2_city = f"{messages[2]} {cities[choosen_city_id]}"
         msg2_product = f"{messages[3]} {sql.get_product_name_by_id(choosen_product_type_id)}"
-        msg2_fasovka = f"{messages[5]} {product_info[2]} гр за {product_info[3]} руб"
+        msg2_fasovka = f"{messages[5]} {check_massa(product_info[2])} г за {product_info[3]} руб"
         msg2 = f"{numbers['more_lines']}\n{msg2_city}\n{msg2_product}\n{msg2_fasovka}\n{numbers['more_lines']}\n"
 
         # Part message commands_list
