@@ -124,8 +124,9 @@ class PaymentMethods:
             msg2 = self.messages[8]
             self.message.reply_text(msg1 + msg2)
 
-    def thirteen(self, wrong_requst= None, error400=None):
-        if not error400:
+
+    def thirteen(self, wrong_requst= None, inner_payment=None):
+        if not inner_payment:
             addt_messeges = sql.get_bot_messages('warning_auto_change', 'warning_may_change_price', 'thirteen_page_buttons')
             # Warnings part
             msg1 = f"{addt_messeges[0]}\n{self.numbers['more_lines']}\n{addt_messeges[1]}\n{self.numbers['more_lines']}\n"
@@ -149,16 +150,16 @@ class PaymentMethods:
             msg = msg1 + msg2 + msg3 + msg4 + msg5
             self.message.reply_text(msg)
 
-        # Срабатывает если быврал какую нибудь метод оплаты и покажет ошибку
+        # Срабатывает если быврал какую нибудь метод оплаты (3: Fastchange, 4: GetBTC, 5: Exchanger CHarlie, 6: Exchanger Alfa
         else:
-            addt_messeges = sql.get_bot_messages('warning_auto_change', 'error_400', 'thirteen_page_buttons')
+            random = Random().str6()
 
-            # Warnings part
-            msg1 = f"{addt_messeges[0]}\n{self.numbers['more_lines']}\n{addt_messeges[1]}\n\n{addt_messeges[2]}\n\n"
-            # List_commands
-            msg2 = self.messages[8]
+            sql.change_user_state(self.message.chat.id, self.state + f';pp{random}')
+            self.inner_thirteen(random)
 
-            self.message.reply_text(msg1 + msg2)
+
+    def inner_thirteen(self, random_application, cancel=None):
+        pass
 
     def fourteen(self, wrong_requst= None):
         # Вернет сообщение: "Unknown error occured! Details : 400"

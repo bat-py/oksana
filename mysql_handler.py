@@ -215,12 +215,14 @@ def get_payment_methods_list():
     cursor = connection.cursor()
 
     #cursor.execute("SELECT method_number, method_name, my_wallet FROM `payment_methods` WHERE method_number = 1 OR method_number = 11 OR method_number = 12 OR method_number = 13 OR method_number = 14 OR method_number = 15 AND payment_methods.status = 1;")
-    cursor.execute(
-        "SELECT method_number, method_name, my_wallet FROM `payment_methods` WHERE method_number < 16 AND payment_methods.status = 1;")
+    #cursor.execute(
+    #    "SELECT method_number, method_name, my_wallet FROM `payment_methods` WHERE method_number < 16 AND payment_methods.status = 1;")
+    cursor.execute("SELECT method_number, method_name, my_wallet FROM `payment_methods` WHERE method_number IN (1, 11, 12, 13, 14, 15) AND payment_methods.status = 1;")
     payment_methods = cursor.fetchall()
     connection.close()
 
     return payment_methods
+
 
 def get_wallet_address(wallet_id):
     connection = connection_creator()

@@ -450,7 +450,7 @@ def choise_city(client, message):
         elif choosen_payment_method_id == 13:
             # Если выбрал какой нибудь метод оплаты, вернет error400
             if message.text in ['3', '4', '5', '6']:
-                payment_page.thirteen(error400=True)
+                payment_page.thirteen(inner_payment=True)
             else:
                 payment_page.thirteen(wrong_requst=True)
 
