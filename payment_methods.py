@@ -5,12 +5,40 @@ import random
 
 class Random:
     def __init__(self):
-        self.letters = list(map(chr, range(ord('A'), ord('Z') + 1)))
+        self.upper_letters = list(map(chr, range(ord('A'), ord('Z') + 1)))
+        self.lower_letters = list(map(chr, range(ord('a'), ord('z') + 1)))
+        self.numbers = [str(i) for i in range(0, 10)]
 
     def str6(self):
         random_str = ''
-        for i in range(0, 6):
-            random_str += random.choice(self.letters)
+        for i in range(6):
+            random_str += random.choice(self.upper_letters)
+
+        return random_str
+
+    def int7(self):
+        return str(random.randint(1000000, 9999999))
+
+    def upper_lower_number24(self):
+        all_ = []
+        all_.extend(self.numbers)
+        all_.extend(self.lower_letters)
+        all_.extend(self.upper_letters)
+
+        random_str = ''
+        for i in range(24):
+            random_str += random.choice(all_)
+
+        return random_str
+
+    def upper_number6(self):
+        all_ = []
+        all_.extend(self.upper_letters)
+        all_.extend(self.numbers)
+
+        random_str = ''
+        for i in range(6):
+            random_str += random.choice(all_)
 
         return random_str
 
@@ -152,14 +180,24 @@ class PaymentMethods:
 
         # Срабатывает если быврал какую нибудь метод оплаты (3: Fastchange, 4: GetBTC, 5: Exchanger CHarlie, 6: Exchanger Alfa
         else:
-            random = Random().str6()
+            if self.message.text == '3' and int(self.choosen_payment_method_id) == 13:
+                random = 'p3' + Random().int7()
+                sql.change_user_state(self.message.chat.id, self.state + f';{random}')
+            elif self.message.text == '4':
+                random = 'p4' + Random().upper_number6()
+                sql.change_user_state(self.message.chat.id, self.state + f';{random}')
+            elif self.message.text == '5':
+                random = 'p5' + Random().int7()
+                sql.change_user_state(self.message.chat.id, self.state + f';{random}')
+            elif self.message.text == '6':
+                random = 'p6' + Random().upper_lower_number24()
+                sql.change_user_state(self.message.chat.id, self.state + f';{random}')
+            else:
+                random = 'pp' + Random().int7()
+                sql.change_user_state(self.message.chat.id, self.state + f';{random}')
 
-            sql.change_user_state(self.message.chat.id, self.state + f';pp{random}')
-            self.inner_thirteen(random)
+            self.inner_payment_methods(random)
 
-
-    def inner_thirteen(self, random_application, cancel=None):
-        pass
 
     def fourteen(self, wrong_requst= None):
         # Вернет сообщение: "Unknown error occured! Details : 400"
@@ -196,7 +234,7 @@ class PaymentMethods:
             random = Random().str6()
 
             sql.change_user_state(self.message.chat.id, self.state + f';pp{random}')
-            self.inner_fifteen(random)
+            self.inner_payment_methods(random)
 
         else:
             addt_messeges = sql.get_bot_messages('warning_auto_change', 'warning_may_change_price')
@@ -215,30 +253,75 @@ class PaymentMethods:
 
             self.message.reply_text(msg1 + msg2 + msg3 + msg4)
 
-    # Отравить сообщения про заявку
-    def inner_fifteen(self, random_application, cancel=None):
+    # Отравить сообщения если пользователь выбрал 15->3 or 13->3,4,5,6
+    def inner_payment_methods(self, random_application, cancel=None):
         # Если отправил любое сообщение кроме "2"
         if not cancel:
-            addt_messeges = sql.get_bot_messages('warning_auto_change', 'qiwi_info')
+            addt_messeges = sql.get_bot_messages('warning_auto_change', 'qiwi_info', 'card_info')
+
+            if random_application.startswith('p3'):
+                change_point = 'FastChange (CARD/TELE2)'
+                summa = int(self.product_info[3]*1.12)
+                method_id = 3
+                wallet_info = 'Номер карты:'
+                timer = '30 минут'
+                msg3 = f"{addt_messeges[2]}\n\n".replace('xxx', timer.upper())
+
+
+            elif random_application.startswith('p4'):
+                change_point = 'getBTC (CARD/Тинькофф Мобайл)'
+                summa = int(self.product_info[3]*1.13)
+                method_id = 4
+                wallet_info = 'Номер карты:'
+                timer = '1 час'
+                msg3 = f"{addt_messeges[2]}\n\n".replace('xxx', timer.upper())
+
+            elif random_application.startswith('p5'):
+                change_point = 'Exchanger Charlie'
+                summa = int(self.product_info[3]*1.14)
+                method_id = 5
+                wallet_info = 'Номер карты:'
+                timer = '3 часа'
+                msg3 = f"{addt_messeges[2]}\n\n".replace('xxx', timer.upper())
+
+            elif random_application.startswith('p6'):
+                change_point = 'Exchanger Alfa'
+                summa = int(self.product_info[3] * 1.16)
+                method_id = 6
+                wallet_info = 'Номер карты:'
+                timer = '30 минут'
+                msg3 = f"{addt_messeges[2]}\n\n".replace('xxx', timer.upper())
+
+
+            # Если он выбрал 15->3
+            else:
+                change_point = 'getBTC (CARD/Тинькофф Мобайл)'
+                summa = int(self.product_info[3] * 1.16)
+                method_id = self.choosen_payment_method_id
+                wallet_info = 'Номер кошелька Qiwi:'
+                timer = '1 час'
+                msg3 = f"{addt_messeges[1]}\n\n"
+
+
             # Warnings part
-            msg1 = f"{addt_messeges[0]}\n{self.numbers['more_lines']}\n<b>Вы выбрали обменный пункт getBTC (CARD/Тинькофф Мобайл)</b>\n{self.numbers['more_lines']}\n"
+            msg1 = f"{addt_messeges[0]}\n{self.numbers['more_lines']}\n<b>Вы выбрали обменный пункт {change_point}</b>\n{self.numbers['more_lines']}\n"
 
             # Wallets
             wallets_list = []
-            wallets_tuple = sql.get_wallet_address(self.choosen_payment_method_id)
+            wallets_tuple = sql.get_wallet_address(method_id)
             if wallets_tuple:
                 wallets_list.extend(wallets_tuple[0].split(','))
+            else:
+                wallets_list.append('error',)
             wallets_list = [i.strip() for i in wallets_list]
 
             # Номер Заявки, Qiwi wallet, price, time
-            msg2_req = f"✅ <b>Номер вашей заявки:</b> {random_application}\n"
-            msg2_qiwi = f"✅ <b>Номер кошелька Qiwi:</b> {random.choice(wallets_list)}\n"
-            msg2_price = f"✅ <b>Сумма для пополнения:</b> {int(self.product_info[3] * 1.16)}\n"
-            msg2_time = f"✅ <b>До конца оплаты:</b> 1 час\n"
+            msg2_req = f"✅ <b>Номер вашей заявки:</b> {random_application[2:]}\n"
+            msg2_qiwi = f"✅ <b>{wallet_info}</b> {random.choice(wallets_list)}\n"
+            msg2_price = f"✅ <b>Сумма для пополнения:</b> {summa}\n"
+            msg2_time = f"✅ <b>До конца оплаты:</b> {timer}\n"
             msg2 = msg2_req + msg2_qiwi + msg2_price + msg2_time + self.numbers['more_lines'] + '\n'
 
-            # Qiwi_zInfo
-            msg3 = f"{addt_messeges[1]}\n\n"
 
             # Buttons
             msg4 = "1⃣: Проверить оплату\n2⃣: Отменить заявку\n\n"
@@ -254,7 +337,7 @@ class PaymentMethods:
             msg1 = f"{addt_messeges[0]}\n{self.numbers['more_lines']}\n"
 
             # Your application(заявка) canceled
-            msg2 = f"Ваша заявка № {random} успешно удалена!\nВы будете возвращены в главное меню.\n\n"
+            msg2 = f"Ваша заявка № {random_application[2:]} успешно удалена!\nВы будете возвращены в главное меню.\n\n"
 
             # List_commands
             msg3 = self.messages[8]

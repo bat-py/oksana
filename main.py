@@ -470,7 +470,7 @@ def choise_city(client, message):
         choosen_fasovka_id = int(state_list[2].replace('f', ''))
         choosen_district_id = int(state_list[3].replace('d', ''))
         choosen_payment_method_id = int(state_list[4].replace('m', ''))
-        choosen_inner_payment_method_random = state_list[5].replace('pp', '')
+        choosen_inner_payment_method_random = state_list[5]
         check_cancel_payment = message.text
 
         # чтобы не писал пользователь вернем ему обратно страницу метода "1: Оплатить балансом"
@@ -478,18 +478,13 @@ def choise_city(client, message):
                                          choosen_product_type_id, choosen_fasovka_id, choosen_district_id,
                                          choosen_payment_method_id, state)
 
-        # Срабатывает если он находиться внутри 15 метода -> 3: getBTC (CARD/Тинькофф Мобайл) RUB
-        if len(choosen_inner_payment_method_random) and not choosen_inner_payment_method_random.isdigit():
-            cancel = False
-            # Если он выбрал "2: Отменить заявку"
-            if check_cancel_payment == '2':
-                cancel = True
-
-            payment_page.inner_fifteen(choosen_inner_payment_method_random, cancel=cancel)
+        cancel = None
+        # Срабатывает если он находиться внутри 15->3 или 15->3,4,5,6 и отравил число 2:
+        if check_cancel_payment == '2':
+            cancel = True
 
         # Если выбрал "1: Проверить заявку" или отправил любой другой смс
-        else:
-            payment_page.inner_fifteen(choosen_inner_payment_method_random)
+        payment_page.inner_payment_methods(choosen_inner_payment_method_random, cancel=cancel)
 
 
 def show_payment_menu(client, message, messages, cities, choosen_city_id, choosen_product_type_id, choosen_fasovka_id, choosen_district_id= None):
