@@ -10,6 +10,13 @@ with open('numbers.json', 'r') as n:
 months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
 
 
+def check_massa(massa):
+    if massa % 1 == 0:
+        massa = int(massa)
+
+    return massa
+
+
 def get_cities_list(without_number=None):
     '''
     returns dict like: {1: '7️⃣ Moscow', ... }
@@ -30,6 +37,7 @@ def get_cities_list(without_number=None):
             for i in city:
                 city_dict[city_id] = numbers[str(city_id)] + ': ' + city
     return city_dict
+
 
 # with_wrong_request: Вместо Отзывы покупателей, Оставить отзыв и Баланс будет wrong_request
 def main_menu(client, message, with_wrong_request= None):
@@ -99,7 +107,7 @@ def get_price(client, message):
         for product_type in group_city:
             msg_products_by_city += '<b>' + product_type[0]['product_name'] + '</b>' + '\n'
             for product in product_type:
-                mesg_product = f"{product['product_massa']} г за {product['product_price']} руб"
+                mesg_product = f"{check_massa(product['product_massa'])} г за {product['product_price']} руб"
                 msg_products_by_city += mesg_product + '\n'
             msg_products_by_city += '\n'
 
@@ -240,7 +248,7 @@ def choise_city(client, message):
             msg_part_fasovkas_list = ''
             for product_data in fasovkas_in_city_in_type:
                 number = numbers[str(product_data[2])]
-                fasovka = f"{product_data[3]} г за {product_data[4]} руб\n"
+                fasovka = f"{check_massa(product_data[3])} г за {product_data[4]} руб\n"
                 msg_part_fasovkas_list += number + ': ' + fasovka
 
             msg3 = f"\n\n{messages[11]}\n\n{msg_part_fasovkas_list}\n"
@@ -279,12 +287,12 @@ def choise_city(client, message):
                 sql.change_user_state(message.chat.id, state+';f'+str(message.text))
 
                 # Part message Balance, You choise "fasovka name"
-                msg1 = f"{messages[0]}\n\n{messages[1]} \"{product_info[2]} г за {product_info[3]} руб\".\n\n"
+                msg1 = f"{messages[0]}\n\n{messages[1]} \"{check_massa(product_info[2])} г за {product_info[3]} руб\".\n\n"
 
                 # Part message into ----------:
                 msg2_city = f"{messages[2]} {cities[choosen_city_id]}"
                 msg2_product = f"{messages[3]} {sql.get_product_name_by_id(choosen_product_type_id)}"
-                msg2_fasovka = f"{messages[5]} {product_info[2]} г за {product_info[3]} руб"
+                msg2_fasovka = f"{messages[5]} {check_massa(product_info[2])} г за {product_info[3]} руб"
                 msg2 = f"{numbers['more_lines']}\n{msg2_city}\n{msg2_product}\n{msg2_fasovka}\n{numbers['more_lines']}\n"
 
 
@@ -316,7 +324,7 @@ def choise_city(client, message):
             msg_part_fasovkas_list = ''
             for product_data in fasovkas_in_city_in_type:
                 number = numbers[str(product_data[2])]
-                fasovka = f"{product_data[3]} г за {product_data[4]} руб\n"
+                fasovka = f"{check_massa(product_data[3])} г за {product_data[4]} руб\n"
                 msg_part_fasovkas_list += number + ': ' + fasovka
 
 
@@ -517,7 +525,7 @@ def show_payment_menu(client, message, messages, cities, choosen_city_id, choose
         msg2_city = f"{messages[2]} {cities[choosen_city_id]}"
         msg2_product = f"{messages[3]} {sql.get_product_name_by_id(choosen_product_type_id)}"
         msg2_district = f"{messages[4]} {districts_dict[str(choosen_district_id)]}"
-        msg2_fasovka = f"{messages[5]} {product_info[2]} г за {product_info[3]} руб"
+        msg2_fasovka = f"{messages[5]} {check_massa(product_info[2])} г за {product_info[3]} руб"
         msg2 = f"{numbers['more_lines']}\n{msg2_city}\n{msg2_product}\n{msg2_district}\n{msg2_fasovka}\n{numbers['more_lines']}\n"
 
         # Part message commands_list and order_bot
@@ -528,7 +536,7 @@ def show_payment_menu(client, message, messages, cities, choosen_city_id, choose
     # Если у выбранного товара нету района
     else:
         # Part message Balance, You choise "fasovka name"
-        msg1 = f"{messages[0]}\n\n{messages[1]} \"{product_info[3]} г за {product_info[4]} руб\".\n\n"
+        msg1 = f"{messages[0]}\n\n{messages[1]} \"{check_massa(product_info[3])} г за {product_info[4]} руб\".\n\n"
 
         # Part message into ----------:
         msg2_city = f"{messages[2]} {cities[choosen_city_id]}"
