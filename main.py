@@ -575,7 +575,6 @@ def main_menus(client, message, wrong_request= None):
         leave_comment(client, message)
 
 
-
 app = Client("my_account", api_id=api_id, api_hash=api_hash)
 
 
@@ -584,7 +583,6 @@ def echo(client, message):
     menues = ['$', '#', '+', '?', '777']
     check_user = sql.get_user_state(message.chat.id)
     numbers = [str(i) for i in range(1, 26)]
-
 
     if not check_user:
         sql.add_user(message.chat.id)
@@ -606,5 +604,6 @@ def echo(client, message):
             get_feedbacks(client, message)
         elif state.startswith('c'):
             choise_city(client, message)
+
 
 app.run()

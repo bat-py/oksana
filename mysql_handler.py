@@ -1,12 +1,16 @@
 import pymysql
+import configparser
+
+config = configparser.ConfigParser()
+config.read('config.ini')
 
 
 def connection_creator():
     connection = pymysql.connect(
-        host='localhost',
-        user='oksana',
-        password='oksana',
-        db='oksana',
+        host=config['sql']['host'],
+        user=config['sql']['user'],
+        password=config['sql']['password'],
+        db=config['sql']['db'],
         charset='utf8mb4',
         #            cursorclass=DictCursor
     )
