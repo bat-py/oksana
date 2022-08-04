@@ -4,6 +4,9 @@ import mysql_handler as sql
 import payment_methods as pm
 import json
 
+api_id = 5193417
+api_hash = '55909d877eef1f996884aee6734dddb9'
+
 with open('numbers.json', 'r') as n:
     numbers = json.load(n)
 
@@ -573,7 +576,7 @@ def main_menus(client, message, wrong_request= None):
 
 
 
-app = Client("my_account")
+app = Client("my_account", api_id=api_id, api_hash=api_hash)
 
 
 @app.on_message()
